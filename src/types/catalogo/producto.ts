@@ -6,6 +6,7 @@ interface ProductoGet {
   categoria: string;
   material: string;
   etiquetas: string[];
+  imagen?: string | null;
 }
 interface ProductoSet {
   descripcion: string;
@@ -13,5 +14,6 @@ interface ProductoSet {
   categoria: string;
   material: string;
   etiquetas: string[];
+  imagen?: string | null;
 }
 export type { ProductoGet, ProductoSet };
