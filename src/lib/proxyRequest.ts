@@ -15,7 +15,7 @@ export async function proxyToBackend(
     const queryString = searchParams.toString()
       ? `?${searchParams.toString()}`
       : "";
-    const backendUrl = `${process.env.API_URL}/${endpoint}/${queryString}`;
+    const backendUrl = `${process.env.API_URL}/${endpoint}${queryString}`;
 
     const headers: HeadersInit = {
       Authorization: `Bearer ${token}`,

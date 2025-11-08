@@ -1,15 +1,47 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { Buffer } from "buffer";
+
+enum UserRole {
+  ADMIN = "ROLE_ADMIN",
+  VENDEDOR = "ROLE_VENDEDOR",
+  CLIENTE = "ROLE_CLIENTE",
+}
+
+const rolePermissions = {
+  "/admin": [UserRole.ADMIN, UserRole.VENDEDOR],
+  "/perfil": [UserRole.ADMIN, UserRole.VENDEDOR, UserRole.CLIENTE],
+};
+
+function getRequiredRole(pathname: string): UserRole[] | null {
+  // Ordenar las rutas de más específica a más general
+  const sortedPaths = Object.keys(rolePermissions).sort(
+    (a, b) => b.length - a.length
+  );
+  for (const pathPrefix of sortedPaths) {
+    if (pathname.startsWith(pathPrefix)) {
+      const typedPathPrefix = pathPrefix as keyof typeof rolePermissions;
+      return rolePermissions[typedPathPrefix];
+    }
+  }
+  return null; // No se requiere rol específico (solo autenticación)
+}
 
 export async function middleware(request: NextRequest) {
-  // 1. Obtener el token de las cookies de la petición.
-  //    El nombre 'sessionToken' debe coincidir con el que usaste al crear la cookie.
   const token = request.cookies.get("jwt-token")?.value;
+  const { pathname } = request.nextUrl;
 
-  // 2. Si no hay token, el usuario no está autenticado.
-  //    Lo redirigimos a la página de login.
+  const secretString =
+    process.env.JWT_SECRET ||
+    "c2tWcWVGR0FxdGF4M0x6MldkOGh5YkI3Y2p4NG5MOUZpRTdNMkM4cU9IUDU0d0w=";
+  const secret = Buffer.from(secretString, "base64");
+
+  // Si no hay token, redirigir a login
   if (!token) {
+    if (request.nextUrl.pathname.startsWith("/api/")) {
+      return NextResponse.json({ message: "No autorizado" }, { status: 401 });
+    }
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
@@ -17,19 +49,50 @@ export async function middleware(request: NextRequest) {
 
   // 3. Si hay un token, verificamos que sea válido.
   try {
-    // La clave secreta DEBE estar en tus variables de entorno (.env.local)
-    // y debe ser la misma con la que se firmó el token en el backend.
-    const secret = new TextEncoder().encode('c2tWcWVGR0FxdGF4M0x6MldkOGh5YkI3Y2p4NG5MOUZpRTdNMkM4cU9IUDU0d0w=');
-    const {payload} = await jwtVerify(token, secret);
+    // Usamos la clave 'secret' decodificada
+    const { payload } = await jwtVerify(token, secret);
+    const userRole = payload.role as string;
 
-    // Si jwtVerify no lanza un error, el token es válido.
-    // Dejamos que la petición continúe.
+    if (!userRole) {
+      throw new Error("Token no contiene 'role'");
+    }
+
+    const requiredRoles = getRequiredRole(pathname);
+    if (requiredRoles) {
+      if (!requiredRoles.includes(userRole as UserRole)) {
+        // ¡NO AUTORIZADO!
+        // Redirigimos al usuario a una página "segura" (ej. el dashboard o /)
+        // NUNCA redirigir a /login, porque el usuario SÍ está logueado.
+
+        // Si es una API, devolvemos 403 (Forbidden)
+        if (pathname.startsWith("/api/")) {
+          return NextResponse.json(
+            { message: "Acceso denegado. Rol insuficiente." },
+            { status: 403 }
+          );
+        }
+
+        // Si es una página, redirigir a una página de "Acceso Denegado" o al home.
+        // Aquí redirigimos al home del admin (que asumimos es seguro).
+        return NextResponse.redirect(new URL("/", request.url));
+      }
+    }
     return NextResponse.next();
   } catch (error) {
-    // 4. Si el token es inválido (expirado, malformado, etc.), jwtVerify lanzará un error.
+    // 4. Si el token es inválido
     console.error("Error de verificación de JWT:", error);
 
-    // Redirigimos al login y eliminamos la cookie inválida del navegador.
+    // Si es una llamada de API, devolvemos 401
+    if (request.nextUrl.pathname.startsWith("/api/")) {
+      const response = NextResponse.json(
+        { message: "Token inválido" },
+        { status: 401 }
+      );
+      response.cookies.delete("jwt-token");
+      return response;
+    }
+
+    // Si es una página, redirigimos al login
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     const response = NextResponse.redirect(url);
@@ -40,15 +103,6 @@ export async function middleware(request: NextRequest) {
 }
 
 // 5. Configuración del "Matcher"
-// Aquí especificamos en qué rutas se debe ejecutar el middleware.
 export const config = {
-  matcher: [
-    /*
-     * Coincide con todas las rutas que quieras proteger.
-     * Excluye rutas como /login, /api, _next/static, etc. para evitar bucles.
-     */
-    "/admin/:path*",
-    "/perfil/:path*",
-
-  ],
+  matcher: ["/admin/:path*", "/perfil/:path*"],
 };

@@ -19,7 +19,7 @@ export async function proxyById(
   if (!token)
     return NextResponse.json({ message: "No autorizado" }, { status: 401 });
 
-  const backendUrl = `${process.env.API_URL}/${endpoint}/${id}/`;
+  const backendUrl = `${process.env.API_URL}/${endpoint}/${id}`;
 
   const headers: HeadersInit = {
     Authorization: `Bearer ${token}`,
@@ -30,7 +30,7 @@ export async function proxyById(
     headers: headers,
   };
 
-  if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method) && req.body) {
+  if (["POST", "PUT", "PATCH"].includes(req.method) && req.body) {
     const incomingContentType = req.headers.get("Content-Type");
 
     if (incomingContentType?.includes("application/json")) {
@@ -54,14 +54,47 @@ export async function proxyById(
   try {
     const res = await fetch(backendUrl, fetchOptions);
 
+    // 4. Mejorado: Manejo robusto de la respuesta
+    // Si la respuesta es 204 (No Content), no hay cuerpo, devolvemos éxito vacío.
     if (res.status === 204) {
       return new NextResponse(null, { status: 204 });
     }
 
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
-  } catch (err) {
-    console.error(`Error proxy a ${endpoint}/${id}:`, err);
-    return NextResponse.json({ message: `${err}` }, { status: 500 });
+    // Leemos la respuesta como texto primero, para evitar errores de JSON
+    const responseText = await res.text();
+
+    // Si la respuesta es exitosa pero no hay texto (raro, pero posible)
+    if (res.ok && !responseText) {
+      return NextResponse.json({}, { status: res.status });
+    }
+
+    // Si no es exitosa (ej. 500 de Spring Boot) y no hay texto
+    if (!res.ok && !responseText) {
+      return NextResponse.json(
+        { message: `Error ${res.status}: ${res.statusText}` },
+        { status: res.status }
+      );
+    }
+
+    // Ahora SÍ intentamos parsear como JSON
+    try {
+      const data = JSON.parse(responseText);
+      // Éxito: devolvemos el JSON de Spring Boot
+      return NextResponse.json(data, { status: res.status });
+    } catch (parseError) {
+      // El backend (Spring) devolvió un error 500 con HTML, no JSON.
+      // Devolvemos el texto HTML/plano como mensaje de error.
+      return NextResponse.json(
+        { message: responseText },
+        { status: res.status }
+      );
+    }
+  } catch (err: any) {
+    // 5. Esto ahora capturará errores de red (ej. Spring Boot caído)
+    console.error(`Error proxy a ${endpoint}/${id}:`, err.message);
+    return NextResponse.json(
+      { message: "Error al conectar con el backend", detail: err.message },
+      { status: 502 } // 502 Bad Gateway es más apropiado
+    );
   }
 }
