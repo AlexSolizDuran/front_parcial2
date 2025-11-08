@@ -1,7 +1,7 @@
 interface ProductoGet {
   id: string;
-  nombre: string;
   descripcion: string;
+  nombre: string;
   modelo: string;
   categoria: string;
   material: string;
