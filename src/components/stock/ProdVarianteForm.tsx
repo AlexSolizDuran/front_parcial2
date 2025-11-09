@@ -14,12 +14,36 @@ interface ProdVarianteFormProps {
   varianteParaEditar?: ProdVarianteGet;
 }
 
+// --- COMPONENTES AYUDANTES (DEFINIDOS AFUERA) ---
+// Esta es la corrección: al estar fuera, no se re-crean en cada render
+// y los inputs ya no pierden el foco.
+
+const Section = ({ icon, title, children }: { icon: React.ReactNode, title: string, children: React.ReactNode }) => (
+  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+    <h3 className="flex items-center text-lg font-semibold text-gray-800 mb-4 border-b pb-3">
+      {icon}
+      <span className="ml-3">{title}</span>
+    </h3>
+    <div className="space-y-4">{children}</div>
+  </div>
+);
+
+const FormField = ({ label, children }: { label: string, children: React.ReactNode }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-600 mb-1">{label}</label>
+    {children}
+  </div>
+);
+
+
+// --- COMPONENTE PRINCIPAL ---
+
 export default function ProdVarianteForm({ varianteParaEditar }: ProdVarianteFormProps) {
   const router = useRouter();
   const [data, setData] = useState<ProdVarianteSet>({
-    productoId: "",
-    colorId: "",
-    tallaId: "",
+    producto: "",
+    color: "",
+    talla: "",
     costo: "",
     ppp: "",
     precio: "",
@@ -37,11 +61,12 @@ export default function ProdVarianteForm({ varianteParaEditar }: ProdVarianteFor
   const isEditMode = Boolean(varianteParaEditar);
 
   useEffect(() => {
+    console.log("useEffect triggered. isEditMode:", isEditMode, "varianteParaEditar:", varianteParaEditar);
     if (isEditMode && varianteParaEditar) {
       setData({
-        productoId: varianteParaEditar.producto.id,
-        colorId: varianteParaEditar.color.id,
-        tallaId: varianteParaEditar.talla.id,
+        producto: varianteParaEditar.producto.id,
+        color: varianteParaEditar.color.id,
+        talla: varianteParaEditar.talla.id,
         costo: String(varianteParaEditar.costo),
         ppp: String(varianteParaEditar.ppp),
         precio: String(varianteParaEditar.precio),
@@ -55,15 +80,16 @@ export default function ProdVarianteForm({ varianteParaEditar }: ProdVarianteFor
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+    // Tu lógica de handleChange es perfectamente correcta
     setData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSaving(true);
-    setError(null);
+setError(null);
 
-    if (!data.productoId || !data.colorId || !data.tallaId || !data.stock) {
+    if (!data.producto || !data.color || !data.talla || !data.stock) {
       setError("Producto, Color, Talla y Stock son obligatorios.");
       setIsSaving(false);
       return;
@@ -71,7 +97,7 @@ export default function ProdVarianteForm({ varianteParaEditar }: ProdVarianteFor
 
     try {
       const result: ProdVarianteGet = await apiFetcher(
-        isEditMode ? `/api/stock/prodVariante/${varianteParaEditar!.id}` : "/api/stock/prodVariante",
+        isEditMode ? `/api/inventario/prodVariante/${varianteParaEditar!.id}` : "/api/inventario/prodVariante",
         {
           method: isEditMode ? "PUT" : "POST",
           body: JSON.stringify(data),
@@ -86,23 +112,6 @@ export default function ProdVarianteForm({ varianteParaEditar }: ProdVarianteFor
     }
   };
 
-  const Section = ({ icon, title, children }: { icon: React.ReactNode, title: string, children: React.ReactNode }) => (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-      <h3 className="flex items-center text-lg font-semibold text-gray-800 mb-4 border-b pb-3">
-        {icon}
-        <span className="ml-3">{title}</span>
-      </h3>
-      <div className="space-y-4">{children}</div>
-    </div>
-  );
-
-  const FormField = ({ label, children }: { label: string, children: React.ReactNode }) => (
-    <div>
-      <label className="block text-sm font-medium text-gray-600 mb-1">{label}</label>
-      {children}
-    </div>
-  );
-
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {error && <div className="text-red-600 bg-red-100 p-4 rounded-lg shadow-sm">{error}</div>}
@@ -112,39 +121,39 @@ export default function ProdVarianteForm({ varianteParaEditar }: ProdVarianteFor
           <Section icon={<Package size={20} />} title="Detalles de la Variante">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FormField label="Producto">
-                <select name="productoId" value={data.productoId} onChange={handleChange} className="input-class" required>
+                <select name="producto" value={data.producto} onChange={handleChange} className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
                   <option value="">Seleccione un producto</option>
                   {productos?.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
                 </select>
               </FormField>
               <FormField label="Color">
-                <select name="colorId" value={data.colorId} onChange={handleChange} className="input-class" required>
+                <select name="color" value={data.color} onChange={handleChange} className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
                   <option value="">Seleccione un color</option>
                   {colores?.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
                 </select>
               </FormField>
               <FormField label="Talla">
-                <select name="tallaId" value={data.tallaId} onChange={handleChange} className="input-class" required>
+                <select name="talla" value={data.talla} onChange={handleChange} className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
                   <option value="">Seleccione una talla</option>
-                  {tallas?.map(t => <option key={t.id} value={t.id}>{t.nombre}</option>)}
+                  {tallas?.map(t => <option key={t.id} value={t.id}>{t.talla}</option>)}
                 </select>
               </FormField>
             </div>
             <FormField label="SKU (Código de Variante)">
-              <input type="text" name="sku" value={data.sku} onChange={handleChange} className="input-class" />
+              <input type="text" name="sku" value={data.sku} onChange={handleChange} className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
             </FormField>
           </Section>
 
           <Section icon={<DollarSign size={20} />} title="Precios y Costos">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FormField label="Costo">
-                <input type="number" step="0.01" name="costo" value={data.costo} onChange={handleChange} className="input-class" />
+                <input type="number" step="0.01" name="costo" value={data.costo} onChange={handleChange} className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
               </FormField>
               <FormField label="PPP (Precio Promedio Ponderado)">
-                <input type="number" step="0.01" name="ppp" value={data.ppp} onChange={handleChange} className="input-class" />
+                <input type="number" step="0.01" name="ppp" value={data.ppp} onChange={handleChange} className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
               </FormField>
               <FormField label="Precio de Venta">
-                <input type="number" step="0.01" name="precio" value={data.precio} onChange={handleChange} className="input-class" />
+                <input type="number" step="0.01" name="precio" value={data.precio} onChange={handleChange} className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
               </FormField>
             </div>
           </Section>
@@ -153,15 +162,15 @@ export default function ProdVarianteForm({ varianteParaEditar }: ProdVarianteFor
         <div className="space-y-8">
           <Section icon={<Hash size={20} />} title="Inventario">
             <FormField label="Cantidad en Stock">
-              <input type="number" name="stock" value={data.stock} onChange={handleChange} className="input-class" required />
+              <input type="number" name="stock" value={data.stock} onChange={handleChange} className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required />
             </FormField>
           </Section>
         </div>
       </div>
 
       <div className="flex justify-end gap-4 pt-6 border-t">
-        <Link href="/admin/inventario/stock" className="btn-secondary">Cancelar</Link>
-        <button type="submit" disabled={isSaving} className="btn-primary">{isSaving ? "Guardando..." : "Guardar Cambios"}</button>
+        <Link href="/admin/inventario/stock" className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">Cancelar</Link>
+        <button type="submit" disabled={isSaving} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">{isSaving ? "Guardando..." : "Guardar Cambios"}</button>
       </div>
     </form>
   );

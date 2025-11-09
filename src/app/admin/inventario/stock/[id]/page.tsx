@@ -11,7 +11,7 @@ export default function ProdVarianteDetallePage() {
   const { id } = params;
 
   const { data: variante, error, isLoading } = useSWR<ProdVarianteGet>(
-    id ? `/api/stock/prodVariante/${id}` : null,
+    id ? `/api/inventario/prodVariante/${id}` : null,
     apiFetcher
   );
 
@@ -38,7 +38,7 @@ export default function ProdVarianteDetallePage() {
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">
             {variante.producto.nombre}
-            <span className="text-lg font-normal text-gray-600 ml-2">({variante.color.nombre}, {variante.talla.nombre})</span>
+            <span className="text-lg font-normal text-gray-600 ml-2">({variante.color.nombre}, {variante.talla.talla})</span>
           </h1>
         </div>
         <Link href={`/admin/inventario/stock/${id}/editar`} className="btn-primary flex items-center">
@@ -55,7 +55,7 @@ export default function ProdVarianteDetallePage() {
           <DetailItem label="PPP" value={variante.ppp} isCurrency />
           <DetailItem label="Precio de Venta" value={variante.precio} isCurrency />
           <DetailItem label="Color" value={variante.color.nombre} />
-          <DetailItem label="Talla" value={variante.talla.nombre} />
+          <DetailItem label="Talla" value={variante.talla.talla} />
         </dl>
       </div>
     </div>

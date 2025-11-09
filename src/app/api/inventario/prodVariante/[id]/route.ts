@@ -5,8 +5,8 @@ async function handler(
   req: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
-  // Assuming the backend endpoint is 'stock/prodVariante'
-  return proxyById(req, ctx, "stock/prodVariante");
+  // The user specified the backend endpoint is 'inventario/prodVariante'
+  return proxyById(req, ctx, "inventario/prod-variante");
 }
 export const GET = handler;
 export const PUT = handler;

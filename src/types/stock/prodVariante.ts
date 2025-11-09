@@ -3,25 +3,25 @@ import { ColorGet } from "../categorias/color";
 import { TallaGet } from "../categorias/talla";
 
 interface ProdVarianteGet {
-  id: String;
+  id: string;
   producto: ProductoGet;
   color: ColorGet;
   talla: TallaGet;
-  costo: String;
-  ppp: String;
-  precio: String;
-  sku: String;
-  stock: String;
+  costo: string;
+  ppp: string;
+  precio: string;
+  sku: string;
+  stock: string;
 }
 interface ProdVarianteSet {
-  productoId: string;
-  colorId: string;
-  tallaId: string;
-  costo: String;
-  ppp: String;
-  precio: String;
-  sku: String;
-  stock: String;
+  producto: string;
+  color: string;
+  talla: string;
+  costo: string;
+  ppp: string;
+  precio: string;
+  sku: string;
+  stock: string;
 }
 interface ProdVarianteList {
   id: string;
