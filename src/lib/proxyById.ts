@@ -16,9 +16,7 @@ export async function proxyById(
     );
 
   const token = req.cookies.get("jwt-token")?.value;
-  if (!token)
-    return NextResponse.json({ message: "No autorizado" }, { status: 401 });
-
+  
   const backendUrl = `${process.env.API_URL}/${endpoint}/${id}`;
 
   const headers: HeadersInit = {

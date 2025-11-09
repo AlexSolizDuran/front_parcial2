@@ -1,6 +1,7 @@
 interface ColorGet {
   id: string;
   nombre: string;
+  codHexa: string;
 }
 interface ColorSet {
   nombre: string;
