@@ -8,7 +8,7 @@ import { ProdVarianteGet } from "@/types/inventario/prodVariante";
 import { Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
 
-// Componente para un solo item en el carrito
+// Componente para un solo item en el carritoooooooo
 function CartItemRow({ item }: { item: ItemCarritoGet }) {
   // Por cada item, necesitamos sus detalles (ProdVariante)
   const {
