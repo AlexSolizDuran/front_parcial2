@@ -12,7 +12,7 @@ export const apiFetcher = async <T>(
     };
 
     try {
-        const res = await fetch(url, { ...options, headers });
+        const res = await fetch(url, { ...options, headers, credentials: "include", });
 
         if (!res.ok) {
             // 1. Empezamos con el error genérico como fallback.

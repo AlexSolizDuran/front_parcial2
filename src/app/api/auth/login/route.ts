@@ -55,10 +55,12 @@ export async function POST(req: NextRequest) {
 
     return response;
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Error en el endpoint /api/auth/login:", err);
+    const message =
+      err instanceof Error ? err.message : typeof err === "string" ? err : "Unknown error";
     return NextResponse.json(
-      { message: "Error interno del servidor", error: err.message },
+      { message: "Error interno del servidor", error: message },
       { status: 500 }
     );
   }

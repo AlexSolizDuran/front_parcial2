@@ -25,22 +25,16 @@ export async function proxyToBackend(
       headers: headers,
     };
 
-    // Solo agregar body si no es GET
     if (req.method !== "GET" && req.method !== "HEAD" && req.body) {
       const incomingContentType = req.headers.get("Content-Type");
 
       if (incomingContentType?.includes("application/json")) {
-        // Caso JSON: Parsear y stringify
         const body = await req.json();
         options.body = JSON.stringify(body);
         headers["Content-Type"] = "application/json";
       } else if (incomingContentType?.includes("multipart/form-data")) {
-        // Caso FormData: Pasar el FormData directamente.
-        // NO agregamos Content-Type a 'headers', fetch() lo hará por nosotros
-        // con el 'boundary' correcto.
         options.body = await req.formData();
       } else {
-        // Otro tipo de body (ej. text/plain), pasarlo como stream
         options.body = req.body;
         if (incomingContentType) {
           headers["Content-Type"] = incomingContentType;
@@ -49,19 +43,45 @@ export async function proxyToBackend(
     }
 
     const res = await fetch(backendUrl, options);
+
+    // --- ¡AQUÍ ESTÁ LA SOLUCIÓN! ---
+
+    // 1. Manejar 204 (No Content) - Éxito sin cuerpo
     if (res.status === 204) {
-      // Devolver una respuesta vacía real con status 204
       return new NextResponse(null, { status: 204 });
     }
 
-    const data = await res.json();
-    // Reenviar la respuesta del backend (sea éxito o error) al cliente
-    return NextResponse.json(data, { status: res.status });
+    // 2. Intentar leer la respuesta como texto
+    const responseText = await res.text();
+
+    // 3. Si el texto está vacío, devolver un JSON de error genérico
+    if (!responseText) {
+      const errorMsg = `Error ${res.status}: La respuesta del backend vino vacía.`;
+      console.error(`Error proxy a ${endpoint}:`, errorMsg);
+      // Devolvemos el status original del backend (ej. 500)
+      return NextResponse.json({ message: errorMsg }, { status: res.status });
+    }
+
+    // 4. Si el texto NO está vacío, intentar parsearlo como JSON
+    try {
+      const data = JSON.parse(responseText);
+      // Éxito: devolver el JSON del backend
+      return NextResponse.json(data, { status: res.status });
+    } catch (parseError) {
+      // 5. Fallo de parseo: El backend devolvió HTML/Texto (probablemente un error)
+      console.error(`Error proxy a ${endpoint}: El backend no devolvió JSON. Contenido:`, responseText);
+      return NextResponse.json(
+        // Devuelve el texto del error del backend, es más útil
+        { message: responseText },
+        { status: res.status } 
+      );
+    }
+    
   } catch (err: any) {
     console.log(err);
     console.error(`Error proxy a ${endpoint}:`, err);
     return NextResponse.json(
-      { message: "Error interno del servidor" },
+      { message: "Error interno del servidor", error: err.message },
       { status: 500 }
     );
   }
