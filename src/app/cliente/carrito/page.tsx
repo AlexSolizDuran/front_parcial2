@@ -4,24 +4,18 @@ import useSWR from "swr";
 import { useCart } from "@/context/CartContext";
 import { apiFetcher } from "@/lib/apiFetcher";
 import { ItemCarritoGet } from "@/types/venta/itemCarrito";
-import { ProdVarianteGet } from "@/types/inventario/prodVariante";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, Plus, Minus } from "lucide-react"; // <-- Importar Plus/Minus
 import Image from "next/image";
+import { useState } from "react"; // <-- Importar useState
 
-// Componente para un solo item en el carritoooooooo
-
+// Componente para un solo item en el carrito (Refactorizado)
 function CartItemRow({ item }: { item: ItemCarritoGet }) {
-  // Por cada item, necesitamos sus detalles (ProdVariante)
-  const {
-    data: variante,
-    error,
-    isLoading,
-  } = useSWR<ProdVarianteGet>(
-    // Usamos el endpoint que ya existe: /api/inventario/prod-variante/[id]
-    // (Asumiendo que creaste la ruta proxy /api/inventario/prod-variante/[id]/route.ts)
-    item ? `/api/inventario/prod-variante/${item.prodVariateId}` : null,
-    apiFetcher
-  );
+  
+  // 1. Obtener funciones del contexto
+  const { updateItemQuantity, removeItemFromCart } = useCart();
+  const [isUpdating, setIsUpdating] = useState(false); // Estado de carga por item
+  
+  const variante = item.prodVariante;
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("es-BO", {
@@ -29,22 +23,26 @@ function CartItemRow({ item }: { item: ItemCarritoGet }) {
       currency: "BOB",
     }).format(price);
   };
+  
+  // 2. Funciones de handler
+  const handleQuantityChange = async (newQuantity: number) => {
+    if (newQuantity < 1) return; // No bajar de 1
+    setIsUpdating(true);
+    await updateItemQuantity(item.id, newQuantity);
+    setIsUpdating(false);
+  };
+  
+  const handleRemove = async () => {
+    setIsUpdating(true);
+    await removeItemFromCart(item.id);
+    // No necesitamos setIsUpdating(false) porque el item desaparecerá
+  };
 
-  if (isLoading) {
-    return (
-      <tr>
-        <td colSpan={5} className="py-4 text-center">
-          <Loader2 className="mx-auto h-5 w-5 animate-spin" />
-        </td>
-      </tr>
-    );
-  }
-
-  if (error || !variante) {
+  if (!variante) {
     return (
       <tr>
         <td colSpan={5} className="py-4 text-center text-red-500">
-          Error al cargar item ID: {item.prodVariateId}
+          Error: El item del carrito (ID: {item.id}) no incluyó una variante.
         </td>
       </tr>
     );
@@ -53,7 +51,8 @@ function CartItemRow({ item }: { item: ItemCarritoGet }) {
   const subtotal = variante.precio * item.cantidad;
 
   return (
-    <tr className="border-b">
+    <tr className={`border-b ${isUpdating ? "opacity-50" : ""}`}>
+      {/* ... (Columna de Producto se mantiene igual) ... */}
       <td className="p-4">
         <div className="flex items-center space-x-4">
           <div className="relative h-16 w-16 rounded bg-gray-100">
@@ -77,12 +76,41 @@ function CartItemRow({ item }: { item: ItemCarritoGet }) {
         </div>
       </td>
       <td className="p-4 text-center">{formatPrice(variante.precio)}</td>
-      <td className="p-4 text-center">{item.cantidad}</td>
+      
+      {/* --- 3. COLUMNA DE CANTIDAD (MODIFICADA) --- */}
+      <td className="p-4 text-center">
+        <div className="flex items-center justify-center rounded border border-gray-300">
+          <button
+            onClick={() => handleQuantityChange(item.cantidad - 1)}
+            className="p-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+            disabled={isUpdating || item.cantidad <= 1}
+          >
+            <Minus className="h-4 w-4" />
+          </button>
+          <span className="w-10 select-none px-2 text-center text-lg font-medium">
+            {isUpdating ? <Loader2 className="h-4 w-4 animate-spin mx-auto"/> : item.cantidad}
+          </span>
+          <button
+            onClick={() => handleQuantityChange(item.cantidad + 1)}
+            className="p-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+            disabled={isUpdating} // Opcional: || item.cantidad >= variante.stock
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        </div>
+      </td>
+      
       <td className="p-4 text-center font-medium">
         {formatPrice(subtotal)}
       </td>
+
+      {/* --- 4. COLUMNA DE QUITAR (MODIFICADA) --- */}
       <td className="p-4 text-center">
-        <button className="text-red-500 hover:text-red-700">
+        <button
+          onClick={handleRemove}
+          disabled={isUpdating}
+          className="text-red-500 hover:text-red-700 disabled:opacity-50"
+        >
           <Trash2 className="h-5 w-5" />
         </button>
       </td>
@@ -90,20 +118,14 @@ function CartItemRow({ item }: { item: ItemCarritoGet }) {
   );
 }
 
-// Página principal del carrito
+// Página principal del carrito (Completa)
 export default function CarritoPage() {
-  const { cartId, isLoading: isCartLoading } = useCart();
+  
+  // 5. Obtenemos 'items' del contexto
+  // Ya no usamos SWR aquí, useCart() nos da los items actualizados
+  const { items, isLoading, error } = useCart();
 
-  const {
-    data: items,
-    error,
-    isLoading: isItemsLoading,
-  } = useSWR<ItemCarritoGet[]>(
-    cartId ? `/api/venta/iteamcarrito/porcarrito/${cartId}` : null,
-    apiFetcher
-  );
-
-  if (isCartLoading || isItemsLoading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-96 items-center justify-center text-gray-500">
         <Loader2 className="mr-2 h-8 w-8 animate-spin" />
@@ -127,10 +149,18 @@ export default function CarritoPage() {
       </div>
     );
   }
+  
+  // 6. Calcular el total (ahora es más fiable)
+  const totalGeneral = items.reduce((acc, item) => {
+    return acc + (item.prodVariante.precio * item.cantidad);
+  }, 0);
 
-  // Calcular total
-  // (Nota: Esto es una aproximación, ya que SWR carga los precios individualmente)
-  // (Una mejor solución es que el backend calcule el total)
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("es-BO", {
+      style: "currency",
+      currency: "BOB",
+    }).format(price);
+  };
 
   return (
     <div className="rounded-lg bg-white p-6 shadow">
@@ -153,8 +183,18 @@ export default function CarritoPage() {
           </tbody>
         </table>
       </div>
-      <div className="mt-6 flex justify-end">
-        <button className="rounded-md bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700">
+      
+      {/* 7. Sección de Total y Checkout */}
+      <div className="mt-6 flex flex-col items-end">
+        <div className="text-right">
+          <p className="text-lg text-gray-600">
+            Total:{" "}
+            <span className="text-2xl font-bold text-gray-900">
+              {formatPrice(totalGeneral)}
+            </span>
+          </p>
+        </div>
+        <button className="mt-4 w-full rounded-md bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700 sm:w-auto">
           Proceder al Pago
         </button>
       </div>

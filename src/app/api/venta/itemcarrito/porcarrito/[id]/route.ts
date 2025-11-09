@@ -6,7 +6,7 @@ async function handler(
   req: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
-  return proxyById(req, ctx, "venta/iteamcarrito/porcarrito");
+  return proxyById(req, ctx, "venta/itemcarrito/porcarrito");
 }
 
 export const GET = handler;

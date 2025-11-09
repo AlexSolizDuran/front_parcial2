@@ -16,9 +16,12 @@ import { ItemCarritoSet, ItemCarritoGet } from "@/types/venta/itemCarrito";
 interface CartContextType {
   cartId: number | null;
   itemCount: number;
-  addItemToCart: (prodVarianteId: number, cantidad: number) => Promise<void>;
   isLoading: boolean;
   error: Error | null;
+  items: ItemCarritoGet[]; // <-- Exponemos los items para el contexto
+  addItemToCart: (prodVarianteId: number, cantidad: number) => Promise<void>;
+  updateItemQuantity: (itemId: number, newQuantity: number) => Promise<void>;
+  removeItemFromCart: (itemId: number) => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -26,7 +29,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UsuarioGet | null>(null);
   const [cartId, setCartId] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [globalLoading, setGlobalLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   // 1. Cargar usuario desde localStorage
@@ -39,23 +42,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // 2. SWR para obtener el carrito del usuario
   const userId = user?.id;
-  const { data: cartData, error: cartError } = useSWR<CarritoGet[]>(
+  const { 
+    data: cartData, 
+    error: cartError,
+    isLoading: isCartLoading
+  } = useSWR<CarritoGet[]>(
     userId ? `/api/venta/carrito/porcliente/${userId}` : null,
     apiFetcher
   );
 
-  // 3. SWR para obtener los items del carrito (y contarlos)
-  const { data: cartItems } = useSWR<ItemCarritoGet[]>(
-    cartId ? `/api/venta/iteamcarrito/porcarrito/${cartId}` : null,
-    apiFetcher
-  );
+  // 3. SWR para obtener los items del carrito
+  const SWR_ITEMS_KEY = cartId ? `/api/venta/itemcarrito/porcarrito/${cartId}` : null;
+  const { 
+    data: cartItems,
+    isLoading: isItemsLoading
+  } = useSWR<ItemCarritoGet[]>(SWR_ITEMS_KEY, apiFetcher);
 
   // 4. Actualizar el cartId cuando SWR lo encuentre
   useEffect(() => {
     if (cartData && cartData.length > 0) {
       setCartId(cartData[0].id);
     } else if (cartData) {
-      // Si cartData es un array vacío, no hay carrito
       setCartId(null);
     }
   }, [cartData]);
@@ -65,13 +72,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!user) {
       throw new Error("Debes iniciar sesión para añadir productos al carrito.");
     }
-
-    // Si ya tenemos el ID, lo devolvemos
     if (cartId) return cartId;
 
-    // Si SWR ya nos dijo que no hay carrito (cartData es []), lo creamos.
     if (cartData && cartData.length === 0) {
-      setIsLoading(true);
+      setGlobalLoading(true);
       try {
         const newCart = await apiFetcher<CarritoGet>("/api/venta/carrito", {
           method: "POST",
@@ -82,51 +86,98 @@ export function CartProvider({ children }: { children: ReactNode }) {
       } catch (err) {
         throw new Error("No se pudo crear el carrito.");
       } finally {
-        setIsLoading(false);
+        setGlobalLoading(false);
       }
     }
-
-    // Si SWR aún está cargando, esperamos
     throw new Error("Obteniendo información del carrito...");
   };
 
   // 6. La función para añadir items
   const addItemToCart = async (prodVarianteId: number, cantidad: number) => {
-    setIsLoading(true);
+    setGlobalLoading(true);
     setError(null);
     try {
       const currentCartId = await getOrCreateCart();
-
       const itemSet: ItemCarritoSet = {
         carritoId: currentCartId,
-        prodVariableId: prodVarianteId, // Asegúrate que coincida con tu DTO Request
+        prodVariableId: prodVarianteId,
         cantidad: cantidad,
       };
-
-      await apiFetcher("/api/venta/iteamcarrito", {
+      await apiFetcher("/api/venta/itemcarrito", {
         method: "POST",
         body: JSON.stringify(itemSet),
       });
-
-      // 7. Refrescar la lista de items del carrito
-      mutate(`/api/venta/iteamcarrito/porcarrito/${currentCartId}`);
-      
-      // ¡Éxito! (Puedes reemplazar esto con un Toast)
+      mutate(SWR_ITEMS_KEY); // Refresca la lista de items
       alert("¡Producto añadido al carrito!");
-
     } catch (err: any) {
       setError(err);
       alert(`Error: ${err.message}`);
     } finally {
-      setIsLoading(false);
+      setGlobalLoading(false);
     }
   };
+
+  // --- 7. NUEVA FUNCIÓN: Actualizar Cantidad ---
+  const updateItemQuantity = async (itemId: number, newQuantity: number) => {
+    if (newQuantity < 1) return; // No permitir cantidad 0 o negativa
+
+    const itemToUpdate = cartItems?.find(item => item.id === itemId);
+    if (!itemToUpdate) return;
+
+    // DTO para el backend
+    const itemSet: ItemCarritoSet = {
+      carritoId: itemToUpdate.carritoId,
+      prodVariableId: itemToUpdate.prodVariante.id,
+      cantidad: newQuantity,
+    };
+    
+    // Actualización Optimista (Opcional, pero mejora la UI)
+    const newItems = cartItems?.map(item => 
+      item.id === itemId ? { ...item, cantidad: newQuantity } : item
+    ) || [];
+    mutate(SWR_ITEMS_KEY, newItems, false); // Actualiza la UI localmente sin re-validar
+    
+    try {
+      await apiFetcher(`/api/venta/itemcarrito/${itemId}`, {
+        method: "PUT",
+        body: JSON.stringify(itemSet),
+      });
+    } catch (err: any) {
+      alert(`Error al actualizar: ${err.message}`);
+      mutate(SWR_ITEMS_KEY); // Revertir si hay error
+    } 
+    // Nota: Podríamos no re-validar al final si confiamos en la UI optimista,
+    // pero es más seguro hacerlo:
+    // finally { mutate(SWR_ITEMS_KEY); }
+  };
+
+  // --- 8. NUEVA FUNCIÓN: Quitar Item ---
+  const removeItemFromCart = async (itemId: number) => {
+    // Actualización Optimista
+    const newItems = cartItems?.filter(item => item.id !== itemId) || [];
+    mutate(SWR_ITEMS_KEY, newItems, false); // Actualiza UI local
+
+    try {
+      await apiFetcher(`/api/venta/itemcarrito/${itemId}`, {
+        method: "DELETE",
+      });
+      // La UI ya está actualizada, pero forzamos un re-fetch para asegurar consistencia
+      mutate(SWR_ITEMS_KEY);
+    } catch (err: any) {
+      alert(`Error al quitar: ${err.message}`);
+      mutate(SWR_ITEMS_KEY); // Revertir si hay error
+    }
+  };
+
 
   const value = {
     cartId,
     itemCount: cartItems?.length || 0,
+    items: cartItems || [], // <-- Exponer items
     addItemToCart,
-    isLoading: isLoading || (userId && !cartData && !cartError),
+    updateItemQuantity,   // <-- Exponer función
+    removeItemFromCart,   // <-- Exponer función
+    isLoading: globalLoading || isCartLoading || (userId && !cartData && !cartError),
     error: error || cartError,
   };
 

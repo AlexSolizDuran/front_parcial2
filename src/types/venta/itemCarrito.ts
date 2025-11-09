@@ -1,10 +1,13 @@
+// src/types/venta/itemCarrito.ts
+import { ProdVarianteGet } from "../inventario/prodVariante"; // <-- AÑADIR IMPORT
+
 /**
  * Representa el DTO: ItemCarritoResponseDTO
  */
 export interface ItemCarritoGet {
   id: number;
   carritoId: number;
-  prodVariateId: number; // OJO: tu DTO dice 'prodVariateId'
+  prodVariante: ProdVarianteGet; // <-- ¡CAMBIO!
   cantidad: number;
   fecha: string;
 }
@@ -14,6 +17,6 @@ export interface ItemCarritoGet {
  */
 export interface ItemCarritoSet {
   carritoId: number;
-  prodVariableId: number; // Tu DTO dice 'prodVariableId'
+  prodVariableId: number; 
   cantidad: number;
 }

@@ -4,12 +4,14 @@ import { useParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetcher } from "@/lib/apiFetcher";
 import { ProdVarianteGet } from "@/types/inventario/prodVariante";
-import { Loader2, ShoppingCart } from "lucide-react";
+import { Loader2, ShoppingCart, Plus, Minus } from "lucide-react"; // <-- Importar Plus/Minus
 import { useCart } from "@/context/CartContext";
+import { useState } from "react"; // <-- Importar useState
 
 // Componente para una sola variante (color, talla, precio)
 function VarianteItem({ variante }: { variante: ProdVarianteGet }) {
-  const { addItemToCart, isLoading } = useCart();
+  const { addItemToCart, isLoading: isCartLoading } = useCart();
+  const [cantidad, setCantidad] = useState(1); // <-- 1. Estado para la cantidad
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("es-BO", {
@@ -18,12 +20,26 @@ function VarianteItem({ variante }: { variante: ProdVarianteGet }) {
     }).format(price);
   };
 
+  // 2. Funciones para incrementar/decrementar
+  const handleDecrement = () => {
+    setCantidad((prev) => (prev > 1 ? prev - 1 : 1)); // No bajar de 1
+  };
+
+  const handleIncrement = () => {
+    // Opcional: Limitar por stock
+    // if (cantidad < variante.stock) {
+    setCantidad((prev) => prev + 1);
+    // }
+  };
+
+  // 3. Actualizar el handler para enviar la cantidad
   const handleAddToCart = () => {
-    addItemToCart(variante.id, 1); // Añade 1 unidad por defecto
+    addItemToCart(variante.id, cantidad);
   };
 
   return (
     <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4">
+      {/* ... (Información del producto se mantiene igual) ... */}
       <div className="flex items-center space-x-4">
         <span
           className="h-8 w-8 rounded-full border border-gray-300"
@@ -40,16 +56,41 @@ function VarianteItem({ variante }: { variante: ProdVarianteGet }) {
           </span>
         </div>
       </div>
+
+      {/* --- SECCIÓN DE BOTONES (MODIFICADA) --- */}
       <div className="flex items-center space-x-4">
         <span className="text-lg font-bold text-gray-900">
           {formatPrice(variante.precio)}
         </span>
+
+        {/* 4. Selector de Cantidad */}
+        <div className="flex items-center rounded border border-gray-300">
+          <button
+            onClick={handleDecrement}
+            className="p-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+            disabled={isCartLoading}
+          >
+            <Minus className="h-4 w-4" />
+          </button>
+          <span className="w-10 select-none px-2 text-center text-lg font-medium">
+            {cantidad}
+          </span>
+          <button
+            onClick={handleIncrement}
+            className="p-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+            disabled={isCartLoading}
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* 5. Botón de Añadir */}
         <button
           onClick={handleAddToCart}
-          disabled={isLoading || variante.stock <= 0}
+          disabled={isCartLoading || variante.stock <= 0}
           className="flex w-36 items-center justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
         >
-          {isLoading ? (
+          {isCartLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <>
@@ -63,6 +104,7 @@ function VarianteItem({ variante }: { variante: ProdVarianteGet }) {
   );
 }
 
+// ... (El componente `ProductoDetallePage` se mantiene igual) ...
 // Página principal
 export default function ProductoDetallePage() {
   const params = useParams();
