@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { MaterialGet, MaterialSet } from "@/types/categorias/material";
 import { apiFetcher } from "@/lib/apiFetcher";
+import { useMateriales } from "@/hooks/useMateriales"; // Import the custom hook
 
 interface MaterialFormModalProps {
   isOpen: boolean;
@@ -21,6 +22,9 @@ export default function MaterialFormModal({
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Use the custom hook to get mutate function
+  const { mutateMateriales: mutate } = useMateriales();
 
   const isEditMode = Boolean(materialParaEditar);
 
@@ -67,6 +71,7 @@ export default function MaterialFormModal({
           body: JSON.stringify(data),
         });
       }
+      mutate(); // Revalidate data after successful operation
       onSuccess();
     } catch (err: any) {
       setError(err.message);

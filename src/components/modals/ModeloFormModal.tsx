@@ -3,11 +3,13 @@ import React, { useState, useEffect } from "react";
 import { ModeloGet, ModeloSet } from "@/types/categorias/modelo";
 import { MarcaGet } from "@/types/categorias/marca";
 import { apiFetcher } from "@/lib/apiFetcher";
+import { useModelos } from "@/hooks/useModelos"; // Import the custom hook for modelos
+import { useMarcas } from "@/hooks/useMarcas"; // Import the custom hook for marcas
 
 interface ModeloFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  marcas: MarcaGet[];
+  marcas: MarcaGet[]; // This prop is no longer needed as we fetch it inside
   onSuccess: () => void;
   modeloParaEditar?: ModeloGet | null;
 }
@@ -15,7 +17,7 @@ interface ModeloFormModalProps {
 export default function ModeloFormModal({
   isOpen,
   onClose,
-  marcas,
+  // marcas, // Removed as we fetch it inside
   onSuccess,
   modeloParaEditar,
 }: ModeloFormModalProps) {
@@ -25,6 +27,10 @@ export default function ModeloFormModal({
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Use custom hooks to get mutate function and marcas data
+  const { mutateModelos: mutate } = useModelos();
+  const { marcas } = useMarcas(); // Fetch marcas inside the modal
 
   const isEditMode = Boolean(modeloParaEditar);
 
@@ -76,6 +82,7 @@ export default function ModeloFormModal({
           body: JSON.stringify(data),
         });
       }
+      mutate(); // Revalidate data after successful operation
       onSuccess();
     } catch (err: any) {
       setError(err.message);
@@ -144,7 +151,7 @@ export default function ModeloFormModal({
                 required
               >
                 <option value="">— Seleccione una Marca —</option>
-                {marcas.map((marca) => (
+                {marcas?.map((marca) => (
                   <option key={marca.id} value={marca.id}>
                     {marca.nombre}
                   </option>

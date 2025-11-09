@@ -1,22 +1,21 @@
 "use client";
 import { useMemo, useState } from "react";
-import useSWR from "swr";
 import { apiFetcher } from "@/lib/apiFetcher";
 import { CategoriaGet } from "@/types/categorias/categoria";
 import CategoriaFormModal from "@/components/modals/CategoriaFormModal";
+import { useCategorias } from "@/hooks/useCategorias";
 
 export default function CategoriaList() {
-  const api_url = "/api/producto/categoria";
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [categoriaEnEdicion, setCategoriaEnEdicion] =
     useState<CategoriaGet | null>(null);
 
   const {
-    data: categorias,
-    error,
-    isLoading,
-    mutate,
-  } = useSWR(api_url, (url) => apiFetcher<CategoriaGet[]>(url));
+    categorias,
+    errorCategorias: error,
+    isLoadingCategorias: isLoading,
+    revalidateCategories: mutate, // Use the new name
+  } = useCategorias();
 
   const categoriaMap = useMemo(() => {
     const map = new Map<string | null, string>();

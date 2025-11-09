@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { TallaGet, TallaSet } from "@/types/categorias/talla";
 import { apiFetcher } from "@/lib/apiFetcher";
+import { useTallas } from "@/hooks/useTallas"; // Import the custom hook
 
 interface TallaFormModalProps {
   isOpen: boolean;
@@ -17,10 +18,13 @@ export default function TallaFormModal({
   tallaParaEditar,
 }: TallaFormModalProps) {
   const [data, setData] = useState<TallaSet>({
-    talla: "",
+    nombre: "",
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Use the custom hook to get mutate function
+  const { mutateTallas: mutate } = useTallas();
 
   const isEditMode = Boolean(tallaParaEditar);
 
@@ -35,9 +39,9 @@ export default function TallaFormModal({
   useEffect(() => {
     if (isOpen) {
       if (isEditMode && tallaParaEditar) {
-        setData({ talla: tallaParaEditar.talla });
+        setData({ nombre: tallaParaEditar.nombre });
       } else {
-        setData({ talla: "" });
+        setData({ nombre: "" });
       }
       setError(null);
       setIsSaving(false);
@@ -49,8 +53,8 @@ export default function TallaFormModal({
     setIsSaving(true);
     setError(null);
 
-    if (!data.talla.trim()) {
-      setError("El talla es obligatorio.");
+    if (!data.nombre.trim()) {
+      setError("El nombre es obligatorio.");
       setIsSaving(false);
       return;
     }
@@ -67,6 +71,7 @@ export default function TallaFormModal({
           body: JSON.stringify(data),
         });
       }
+      mutate(); // Revalidate data after successful operation
       onSuccess();
     } catch (err: any) {
       setError(err.message);
@@ -103,16 +108,16 @@ export default function TallaFormModal({
 
             <div>
               <label
-                htmlFor="talla"
+                htmlFor="nombre"
                 className="block text-sm font-medium text-gray-700"
               >
-                talla
+                Nombre
               </label>
               <input
                 type="text"
-                id="talla"
-                name="talla"
-                value={data.talla}
+                id="nombre"
+                name="nombre"
+                value={data.nombre}
                 onChange={handleChange}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 required

@@ -1,4 +1,4 @@
-import { UsuarioGet } from "../usuario/usuarioGet";
+import { UsuarioGet } from "../usuario/usuario";
 
 interface AuthResponse{
     token:string,

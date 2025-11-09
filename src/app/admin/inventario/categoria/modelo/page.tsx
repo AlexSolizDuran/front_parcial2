@@ -1,10 +1,10 @@
 "use client";
 import { useMemo, useState } from "react";
-import useSWR from "swr";
 import { apiFetcher } from "@/lib/apiFetcher";
 import { ModeloGet } from "@/types/categorias/modelo";
-import { MarcaGet } from "@/types/categorias/marca";
 import ModeloFormModal from "@/components/modals/ModeloFormModal";
+import { useModelos } from "@/hooks/useModelos"; // Import the custom hook
+import { useMarcas } from "@/hooks/useMarcas"; // Import the custom hook for marcas
 
 export default function ModeloList() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -12,21 +12,16 @@ export default function ModeloList() {
     null
   );
 
-  // Fetch de Modelos
+  // Use the custom hook for modelos
   const {
-    data: modelos,
-    error: errorModelos,
-    isLoading: isLoadingModelos,
-    mutate: mutateModelos,
-  } = useSWR("/api/producto/modelo", (url) => apiFetcher<ModeloGet[]>(url));
-  console.log(modelos);
+    modelos,
+    errorModelos: error,
+    isLoadingModelos: isLoadingModelos,
+    mutateModelos: mutate,
+  } = useModelos();
 
-  // Fetch de Marcas para el dropdown y la tabla
-  const {
-    data: marcas,
-    error: errorMarcas,
-    isLoading: isLoadingMarcas,
-  } = useSWR("/api/producto/marca", (url) => apiFetcher<MarcaGet[]>(url));
+  // Use the custom hook for marcas
+  const { marcas, isLoadingMarcas } = useMarcas();
 
   const marcaMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -54,7 +49,7 @@ export default function ModeloList() {
   };
 
   const handleSuccess = () => {
-    mutateModelos();
+    mutate();
     handleCerrarModal();
   };
 
@@ -63,14 +58,13 @@ export default function ModeloList() {
       await apiFetcher(`/api/producto/modelo/${id}`, {
         method: "DELETE",
       });
-      mutateModelos();
+      mutate();
     } catch (err) {
       console.error(err);
     }
   };
 
   const isLoading = isLoadingModelos || isLoadingMarcas;
-  const error = errorModelos || errorMarcas;
 
   if (isLoading) return <div>Cargando datos...</div>;
   if (error) return <div>Error al cargar los datos.</div>;

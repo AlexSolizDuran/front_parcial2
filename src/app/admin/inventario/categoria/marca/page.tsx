@@ -1,21 +1,21 @@
 "use client";
 import { useState } from "react";
-import useSWR from "swr";
 import { apiFetcher } from "@/lib/apiFetcher";
 import { MarcaGet } from "@/types/categorias/marca";
 import MarcaFormModal from "@/components/modals/MarcaFormModal";
+import { useMarcas } from "@/hooks/useMarcas"; // Import the custom hook
 
 export default function MarcaList() {
-  const api_url = "/api/producto/marca";
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [marcaEnEdicion, setMarcaEnEdicion] = useState<MarcaGet | null>(null);
 
+  // Use the custom hook
   const {
-    data: marcas,
-    error,
-    isLoading,
-    mutate,
-  } = useSWR(api_url, (url) => apiFetcher<MarcaGet[]>(url));
+    marcas,
+    errorMarcas: error,
+    isLoadingMarcas: isLoading,
+    mutateMarcas: mutate,
+  } = useMarcas();
 
   const handleAbrirModalEditar = (marca: MarcaGet) => {
     setMarcaEnEdicion(marca);

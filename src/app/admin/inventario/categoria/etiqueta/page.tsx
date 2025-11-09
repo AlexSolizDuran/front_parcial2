@@ -1,22 +1,22 @@
 "use client";
 import { useState } from "react";
-import useSWR from "swr";
 import { apiFetcher } from "@/lib/apiFetcher";
 import { EtiquetaGet } from "@/types/categorias/etiqueta";
 import EtiquetaFormModal from "@/components/modals/EtiquetaFormModal";
+import { useEtiquetas } from "@/hooks/useEtiquetas"; // Import the custom hook
 
 export default function EtiquetaList() {
-  const api_url = "/api/producto/etiqueta";
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [etiquetaEnEdicion, setEtiquetaEnEdicion] =
     useState<EtiquetaGet | null>(null);
 
+  // Use the custom hook
   const {
-    data: etiquetas,
-    error,
-    isLoading,
-    mutate,
-  } = useSWR(api_url, (url) => apiFetcher<EtiquetaGet[]>(url));
+    etiquetas,
+    errorEtiquetas: error,
+    isLoadingEtiquetas: isLoading,
+    mutateEtiquetas: mutate,
+  } = useEtiquetas();
 
   const handleAbrirModalEditar = (etiqueta: EtiquetaGet) => {
     setEtiquetaEnEdicion(etiqueta);

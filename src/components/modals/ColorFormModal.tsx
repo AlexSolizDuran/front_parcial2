@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { ColorGet, ColorSet } from "@/types/categorias/color";
 import { apiFetcher } from "@/lib/apiFetcher";
+import { useColores } from "@/hooks/useColores"; // Import the custom hook
 
 interface ColorFormModalProps {
   isOpen: boolean;
@@ -21,6 +22,9 @@ export default function ColorFormModal({
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Use the custom hook to get mutate function
+  const { mutateColores: mutate } = useColores();
 
   const isEditMode = Boolean(colorParaEditar);
 
@@ -67,6 +71,7 @@ export default function ColorFormModal({
           body: JSON.stringify(data),
         });
       }
+      mutate(); // Revalidate data after successful operation
       onSuccess();
     } catch (err: any) {
       setError(err.message);

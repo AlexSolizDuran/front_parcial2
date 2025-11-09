@@ -1,15 +1,18 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import useSWR from "swr";
+
 import { ProductoGet, ProductoSet } from "@/types/catalogo/producto";
 import { apiFetcher } from "@/lib/apiFetcher";
-import { ModeloGet } from "@/types/categorias/modelo";
-import { CategoriaGet } from "@/types/categorias/categoria";
-import { MaterialGet } from "@/types/categorias/material";
-import { EtiquetaGet } from "@/types/categorias/etiqueta";
+
 import Link from "next/link";
 import { FileText, Image as ImageIcon, Tag } from "lucide-react";
+import FormField from "@/components/forms/FormField";
+import Section from "@/components//forms/Section";
+import { useModelos } from "@/hooks/useModelos";
+import { useCategorias } from "@/hooks/useCategorias";
+import { useMateriales } from "@/hooks/useMateriales";
+import { useEtiquetas } from "@/hooks/useEtiquetas";
 
 interface ProductoFormProps {
   productoParaEditar?: ProductoGet;
@@ -39,22 +42,13 @@ export default function ProductoForm({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { data: modelos } = useSWR<ModeloGet[]>(
-    "/api/producto/modelo",
-    apiFetcher
-  );
-  const { data: categorias } = useSWR<CategoriaGet[]>(
-    "/api/producto/categoria",
-    apiFetcher
-  );
-  const { data: materiales } = useSWR<MaterialGet[]>(
-    "/api/producto/material",
-    apiFetcher
-  );
-  const { data: etiquetasData } = useSWR<EtiquetaGet[]>(
-    "/api/producto/etiqueta",
-    apiFetcher
-  );
+  const { modelos } = useModelos();
+
+  const { categorias } = useCategorias();
+
+  const { materiales } = useMateriales();
+
+  const { etiquetas } = useEtiquetas();
 
   const isEditMode = Boolean(productoParaEditar);
 
@@ -150,39 +144,6 @@ export default function ProductoForm({
       setIsSaving(false);
     }
   };
-
-  const Section = ({
-    icon,
-    title,
-    children,
-  }: {
-    icon: React.ReactNode;
-    title: string;
-    children: React.ReactNode;
-  }) => (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-      <h3 className="flex items-center text-lg font-semibold text-gray-800 mb-4 border-b pb-3">
-        {icon}
-        <span className="ml-3">{title}</span>
-      </h3>
-      <div className="space-y-4">{children}</div>
-    </div>
-  );
-
-  const FormField = ({
-    label,
-    children,
-  }: {
-    label: string;
-    children: React.ReactNode;
-  }) => (
-    <div>
-      <label className="block text-sm font-medium text-gray-600 mb-1">
-        {label}
-      </label>
-      {children}
-    </div>
-  );
 
   return (
     <form
@@ -293,7 +254,7 @@ export default function ProductoForm({
                 multiple
                 className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm h-40"
               >
-                {etiquetasData?.map((e) => (
+                {etiquetas?.map((e) => (
                   <option key={e.id} value={e.id}>
                     {e.nombre}
                   </option>

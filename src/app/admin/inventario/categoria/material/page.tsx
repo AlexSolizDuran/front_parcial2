@@ -1,22 +1,22 @@
 "use client";
 import { useState } from "react";
-import useSWR from "swr";
 import { apiFetcher } from "@/lib/apiFetcher";
 import { MaterialGet } from "@/types/categorias/material";
 import MaterialFormModal from "@/components/modals/MaterialFormModal";
+import { useMateriales } from "@/hooks/useMateriales"; // Import the custom hook
 
 export default function MaterialList() {
-  const api_url = "/api/producto/material";
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [materialEnEdicion, setMaterialEnEdicion] =
     useState<MaterialGet | null>(null);
 
+  // Use the custom hook
   const {
-    data: materiales,
-    error,
-    isLoading,
-    mutate,
-  } = useSWR(api_url, (url) => apiFetcher<MaterialGet[]>(url));
+    materiales,
+    errorMateriales: error,
+    isLoadingMateriales: isLoading,
+    mutateMateriales: mutate,
+  } = useMateriales();
 
   const handleAbrirModalEditar = (material: MaterialGet) => {
     setMaterialEnEdicion(material);

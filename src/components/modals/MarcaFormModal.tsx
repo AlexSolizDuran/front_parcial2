@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { MarcaGet, MarcaSet } from "@/types/categorias/marca";
 import { apiFetcher } from "@/lib/apiFetcher";
+import { useMarcas } from "@/hooks/useMarcas"; // Import the custom hook
 
 interface MarcaFormModalProps {
   isOpen: boolean;
@@ -21,6 +22,9 @@ export default function MarcaFormModal({
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Use the custom hook to get mutate function
+  const { mutateMarcas: mutate } = useMarcas();
 
   const isEditMode = Boolean(marcaParaEditar);
 
@@ -67,6 +71,7 @@ export default function MarcaFormModal({
           body: JSON.stringify(data),
         });
       }
+      mutate(); // Revalidate data after successful operation
       onSuccess();
     } catch (err: any) {
       setError(err.message);

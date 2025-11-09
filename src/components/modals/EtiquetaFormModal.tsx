@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { EtiquetaGet, EtiqueteSet } from "@/types/categorias/etiqueta";
 import { apiFetcher } from "@/lib/apiFetcher";
+import { useEtiquetas } from "@/hooks/useEtiquetas"; // Import the custom hook
 
 interface EtiquetaFormModalProps {
   isOpen: boolean;
@@ -21,6 +22,9 @@ export default function EtiquetaFormModal({
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Use the custom hook to get mutate function
+  const { mutateEtiquetas: mutate } = useEtiquetas();
 
   const isEditMode = Boolean(etiquetaParaEditar);
 
@@ -67,6 +71,7 @@ export default function EtiquetaFormModal({
           body: JSON.stringify(data),
         });
       }
+      mutate(); // Revalidate data after successful operation
       onSuccess();
     } catch (err: any) {
       setError(err.message);
@@ -142,3 +147,4 @@ export default function EtiquetaFormModal({
     </div>
   );
 }
+

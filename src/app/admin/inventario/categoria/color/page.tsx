@@ -1,21 +1,21 @@
 "use client";
 import { useState } from "react";
-import useSWR from "swr";
 import { apiFetcher } from "@/lib/apiFetcher";
 import { ColorGet } from "@/types/categorias/color";
 import ColorFormModal from "@/components/modals/ColorFormModal";
+import { useColores } from "@/hooks/useColores"; // Import the custom hook
 
 export default function ColorList() {
-  const api_url = "/api/inventario/color";
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [colorEnEdicion, setColorEnEdicion] = useState<ColorGet | null>(null);
 
+  // Use the custom hook
   const {
-    data: colores,
-    error,
-    isLoading,
-    mutate,
-  } = useSWR(api_url, (url) => apiFetcher<ColorGet[]>(url));
+    colores,
+    errorColores: error,
+    isLoadingColores: isLoading,
+    mutateColores: mutate,
+  } = useColores();
 
   const handleAbrirModalEditar = (color: ColorGet) => {
     setColorEnEdicion(color);

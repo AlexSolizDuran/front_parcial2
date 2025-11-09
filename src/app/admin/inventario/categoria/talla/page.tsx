@@ -1,21 +1,21 @@
 "use client";
 import { useState } from "react";
-import useSWR from "swr";
 import { apiFetcher } from "@/lib/apiFetcher";
 import { TallaGet } from "@/types/categorias/talla";
 import TallaFormModal from "@/components/modals/TallaFormModal";
+import { useTallas } from "@/hooks/useTallas"; // Import the custom hook
 
 export default function TallaList() {
-  const api_url = "/api/inventario/talla";
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tallaEnEdicion, setTallaEnEdicion] = useState<TallaGet | null>(null);
 
+  // Use the custom hook
   const {
-    data: tallas,
-    error,
-    isLoading,
-    mutate,
-  } = useSWR(api_url, (url) => apiFetcher<TallaGet[]>(url));
+    tallas,
+    errorTallas: error,
+    isLoadingTallas: isLoading,
+    mutateTallas: mutate,
+  } = useTallas();
 
   const handleAbrirModalEditar = (talla: TallaGet) => {
     setTallaEnEdicion(talla);

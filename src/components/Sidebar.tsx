@@ -17,7 +17,7 @@ import {
   User as UserProfileIcon,
   StepForwardIcon,
 } from "lucide-react";
-import { UsuarioGet } from "@/types/usuario/usuarioGet";
+import { UsuarioGet } from "@/types/usuario/usuario";
 import { apiFetcher } from "@/lib/apiFetcher";
 
 const usePathname = () => "/admin";
@@ -119,11 +119,11 @@ export default function Sidebar() {
       children: [
         {
           name: "Clientes",
-          href: "/admin/cliente",
+          href: "/admin/usuario/cliente",
         },
         {
           name: "Vendedores",
-          href: "/admin/vendedor", // Asumo que solo lo ven Admins o Gerentes
+          href: "/admin/usuario/vendedor", // Asumo que solo lo ven Admins o Gerentes
         },
       ],
     },
