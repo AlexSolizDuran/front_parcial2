@@ -4,14 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiFetcher } from "@/lib/apiFetcher";
-import {
-  Loader2,
-  Lock,
-  Mail,
-  User,
-  Phone,
-  LogInIcon,
-} from "lucide-react";
+import { Loader2, Lock, Mail, User, Phone, LogInIcon } from "lucide-react";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -22,6 +15,7 @@ export default function RegisterPage() {
     telefono: "",
     password: "",
     confirmPassword: "",
+    rolId: 2,
   });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -78,10 +72,7 @@ export default function RegisterPage() {
     required = true
   ) => (
     <div>
-      <label
-        htmlFor={id}
-        className="block text-sm font-semibold text-gray-700"
-      >
+      <label htmlFor={id} className="block text-sm font-semibold text-gray-700">
         {label}
       </label>
       <div className="relative mt-2">
@@ -122,13 +113,7 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {renderInput("nombre", "Nombre", "text", User, "Tu nombre")}
-              {renderInput(
-                "apellido",
-                "Apellido",
-                "text",
-                User,
-                "Tu apellido"
-              )}
+              {renderInput("apellido", "Apellido", "text", User, "Tu apellido")}
             </div>
 
             {renderInput(
@@ -138,13 +123,7 @@ export default function RegisterPage() {
               LogInIcon,
               "Tu nombre de usuario"
             )}
-            {renderInput(
-              "email",
-              "Email",
-              "email",
-              Mail,
-              "tu@correo.com"
-            )}
+            {renderInput("email", "Email", "email", Mail, "tu@correo.com")}
             {renderInput(
               "telefono",
               "Teléfono (Opcional)",

@@ -12,11 +12,12 @@ import {
   LogOut,
   Store,
   Loader2,
+  ClipboardList,
 } from "lucide-react";
-import { UsuarioGet } from "@/types/usuario/usuarioGet";
+import { UsuarioGet } from "@/types/usuario/usuario";
 import { CategoriaTree } from "@/types/categorias/categoria";
 import { apiFetcher } from "@/lib/apiFetcher";
-import CategoriaDropdown from "./CategoriaDropdown"; 
+import CategoriaDropdown from "./CategoriaDropdown";
 import { useCart } from "@/context/CartContext";
 
 export default function Navbar() {
@@ -64,9 +65,7 @@ export default function Navbar() {
       {user ? (
         <div
           className={
-            isMobile
-              ? "flex flex-col space-y-2"
-              : "flex items-center space-x-4"
+            isMobile ? "flex flex-col space-y-2" : "flex items-center space-x-4"
           }
         >
           <Link
@@ -81,6 +80,21 @@ export default function Navbar() {
           >
             <User className="h-5 w-5" />
             <span className={isMobile ? "ml-2" : "sr-only"}>Mi Perfil</span>
+          </Link>
+          <Link
+            href="/cliente/historial" // <-- ¡NUEVO! (Puedes cambiar la URL)
+            onClick={() => setIsMobileMenuOpen(false)}
+            className={
+              isMobile
+                ? "flex items-center rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100"
+                : "flex items-center text-gray-600 hover:text-blue-600"
+            }
+            title="Historial de Compras"
+          >
+            <ClipboardList className="h-5 w-5" />
+            <span className={isMobile ? "ml-2" : "sr-only"}>
+              Historial de Compras
+            </span>
           </Link>
           <button
             onClick={handleLogout}
@@ -167,13 +181,13 @@ export default function Navbar() {
                 Trendora
               </span>
             </Link>
-            <div className="hidden md:ml-10 md:flex md:space-x-8">
+            <div className="hidden md:ml-10 md:flex items-center md:space-x-8">
               <CategoriaDropdown />
             </div>
           </div>
 
           <div className="hidden items-center space-x-4 md:flex">
-                {/* --- 3. MODIFICAR EL ICONO DEL CARRITO --- */}
+            {/* --- 3. MODIFICAR EL ICONO DEL CARRITO --- */}
             <Link
               href="/cliente/carrito" // Apuntar a la nueva página
               className="relative rounded-full bg-gray-100 p-2 text-gray-600 hover:bg-gray-200"
@@ -187,24 +201,28 @@ export default function Navbar() {
               )}
             </Link>
             <div className="h-6 w-px bg-gray-200" aria-hidden="true" />
-            
+
             {/* --- SOLUCIÓN AUTH DESKTOP --- */}
-            {isMounted ? <AuthLinks isMobile={false} /> : <AuthPlaceholder isMobile={false} />}
+            {isMounted ? (
+              <AuthLinks isMobile={false} />
+            ) : (
+              <AuthPlaceholder isMobile={false} />
+            )}
           </div>
 
           {/* Botón de Menú Móvil */}
           <div className="-mr-2 flex items-center md:hidden">
             <Link
-                href="/cliente/carrito" // Apuntar a la nueva página
-                className="relative rounded-full bg-white p-2 text-gray-600 hover:bg-gray-100"
-                title="Carrito de Compras"
-              >
-                <ShoppingCart className="h-6 w-6" />
-                {isMounted && itemCount > 0 && (
-                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
-                    {itemCount}
-                  </span>
-                )}
+              href="/cliente/carrito" // Apuntar a la nueva página
+              className="relative rounded-full bg-white p-2 text-gray-600 hover:bg-gray-100"
+              title="Carrito de Compras"
+            >
+              <ShoppingCart className="h-6 w-6" />
+              {isMounted && itemCount > 0 && (
+                <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+                  {itemCount}
+                </span>
+              )}
             </Link>
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -230,7 +248,7 @@ export default function Navbar() {
             <p className="px-3 py-2 text-xs font-semibold uppercase text-gray-400">
               Categorías
             </p>
-            
+
             {/* --- SOLUCIÓN CATEGORÍAS MÓVIL --- */}
             {isMounted ? (
               <>
@@ -261,9 +279,12 @@ export default function Navbar() {
             )}
           </div>
           <div className="border-t border-gray-200 px-2 pb-3 pt-2">
-            
             {/* --- SOLUCIÓN AUTH MÓVIL --- */}
-            {isMounted ? <AuthLinks isMobile={true} /> : <AuthPlaceholder isMobile={true} />}
+            {isMounted ? (
+              <AuthLinks isMobile={true} />
+            ) : (
+              <AuthPlaceholder isMobile={true} />
+            )}
           </div>
         </div>
       )}

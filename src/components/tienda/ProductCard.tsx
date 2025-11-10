@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ProductoGet } from "@/types/catalogo/producto";
 import { Package } from "lucide-react";
+import Image from "next/image";
 
 interface ProductCardProps {
   producto: ProductoGet;
@@ -17,7 +18,35 @@ export default function ProductCard({ producto }: ProductCardProps) {
       className="group relative flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md"
     >
       <div className="flex aspect-square w-full items-center justify-center rounded-md bg-gray-100 text-gray-400">
-        <Package className="h-20 w-20" />
+        {producto.imagen ? (
+          // 2. Si hay imagen, mostrarla
+          <Image
+            src={producto.imagen}
+            alt={producto.nombre}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          // 3. Si NO hay imagen, mostrar el ícono placeholder
+          <div className="flex h-full w-full items-center justify-center text-gray-400">
+            {producto.imagen ? (
+              // 2. Si hay imagen, mostrarla
+              <Image
+                src={producto.imagen}
+                alt={producto.nombre}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+            ) : (
+              // 3. Si NO hay imagen, mostrar el ícono placeholder
+              <div className="flex h-full w-full items-center justify-center text-gray-400">
+                <Package className="h-20 w-20" />{" "}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex-1 pt-4">
