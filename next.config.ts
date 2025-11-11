@@ -1,8 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  reactCompiler: true,
+  reactCompiler: true, // Esto ya lo tenías
+
+  // --- AÑADE ESTO ---
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        port: '',
+        pathname: '/**', // Permite cualquier ruta dentro de ese hostname
+      },
+    ],
+  },
+  // --- FIN DE LA ADICIÓN ---
 };
 
 export default nextConfig;
