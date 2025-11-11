@@ -18,10 +18,10 @@ export default function CategoriaList() {
   } = useCategorias();
 
   const categoriaMap = useMemo(() => {
-    const map = new Map<string | null, string>();
+    const map = new Map<number | null, string>();
 
     map.set(null, "— Categoría Raíz —");
-    map.set("", "— Categoría Raíz —");
+    map.set(0, "— Categoría Raíz —");
 
     if (categorias) {
       for (const cat of categorias) {
@@ -50,7 +50,7 @@ export default function CategoriaList() {
     mutate();
     handleCerrarModal();
   };
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     try {
       await apiFetcher(`/api/producto/categoria/${id}`, {
         method: "DELETE",

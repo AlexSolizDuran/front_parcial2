@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import useSWR from "swr";
 import { apiFetcher } from "@/lib/apiFetcher";
-import { UsuarioGet } from "@/types/usuario/usuarioGet";
+import { UsuarioGet } from "@/types/usuario/usuario";
 import { DireccionGet, DireccionSet } from "@/types/usuario/direccion";
 import { Loader2, Save, Home, MapPin, Building } from "lucide-react";
 
@@ -84,7 +84,7 @@ export default function PerfilPage() {
 
     const dataSet: DireccionSet = {
       ...formData,
-      usuarioId: parseInt(user.id), // Añadimos el usuarioId
+      usuarioId:user.id, // Añadimos el usuarioId
     };
 
     try {

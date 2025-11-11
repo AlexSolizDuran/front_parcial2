@@ -28,11 +28,10 @@ export function useProdVariantes() { // Original function name
 
     return rawProdVariantes.map(pv => ({
       id: pv.id,
-      producto: productoMap.get(pv.producto) || "N/A",
-      color: colorMap.get(pv.color) || "N/A",
-      talla: tallaMap.get(pv.talla) || "N/A",
+      producto: productoMap.get(Number(pv.producto)) || "N/A",
+      color: colorMap.get(Number(pv.color)) || "N/A",
+      talla: tallaMap.get(Number(pv.talla)) || "N/A",
       costo: pv.costo,
-      ppp: pv.ppp,
       precio: pv.precio,
       sku: pv.sku,
       stock: pv.stock,

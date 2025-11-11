@@ -6,10 +6,12 @@ import { UsuarioGet, UsuarioSet } from "@/types/usuario/usuario";
 import { apiFetcher } from "@/lib/apiFetcher";
 import Link from "next/link";
 import { User, Lock, Phone, Mail, Tag } from "lucide-react";
+import  FormField from "@/components/forms/FormField";
+import Section from "@/components/forms/Section";
 
 interface UserFormProps {
   userParaEditar?: UsuarioGet;
-  rolFijoId?: string; // New: if the role ID is fixed
+  rolFijoId?: number; // New: if the role ID is fixed
 }
 
 
@@ -21,8 +23,8 @@ export default function UserForm({ userParaEditar, rolFijoId }: UserFormProps) {
     email: "",
     password: "",
     username: "",
-    telefono: "",
-    rolId: "", 
+    telefono: 0,
+    rolId: 3, 
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +42,7 @@ export default function UserForm({ userParaEditar, rolFijoId }: UserFormProps) {
         password: "", // Password is not pre-filled for security
         username: userParaEditar.username,
         telefono: userParaEditar.telefono,
-        rolId: rolFijoId || ""// If rolFijoId is provided, use it
+        rolId: 3// If rolFijoId is provided, use it
                
       });
     }
@@ -58,7 +60,7 @@ export default function UserForm({ userParaEditar, rolFijoId }: UserFormProps) {
     setIsSaving(true);
     setError(null);
 
-    if (!data.nombre || !data.apellido || !data.email || !data.username || !data.rolId || (!isEditMode && !data.password)) {
+    if (!data.nombre || !data.apellido || !data.email || !data.username || (!isEditMode && !data.password)) {
       setError("Todos los campos obligatorios deben ser rellenados.");
       setIsSaving(false);
       return;
@@ -67,7 +69,7 @@ export default function UserForm({ userParaEditar, rolFijoId }: UserFormProps) {
     try {
       const payload = { ...data };
       
-
+      console.log(payload)
       const result: UsuarioGet = await apiFetcher(
         isEditMode ? `/api/usuario/usuario/${userParaEditar!.id}` : "/api/usuario/usuario",
         {
@@ -84,22 +86,7 @@ export default function UserForm({ userParaEditar, rolFijoId }: UserFormProps) {
     }
   };
 
-  const Section = ({ icon, title, children }: { icon: React.ReactNode, title: string, children: React.ReactNode }) => (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-      <h3 className="flex items-center text-lg font-semibold text-gray-800 mb-4 border-b pb-3">
-        {icon}
-        <span className="ml-3">{title}</span>
-      </h3>
-      <div className="space-y-4">{children}</div>
-    </div>
-  );
 
-  const FormField = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div>
-      <label className="block text-sm font-medium text-gray-600 mb-1">{label}</label>
-      {children}
-    </div>
-  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">

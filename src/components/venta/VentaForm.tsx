@@ -36,8 +36,8 @@ export default function VentaForm({}: VentaFormProps) {
   const authUser = useAuthUser(); // Get the authenticated user
 
   const [ventaData, setVentaData] = useState<VentaSet>({
-    clienteID: "",
-    vendedorID: "",
+    clienteID: 0,
+    vendedorID: 0,
     metodoPago: "",
     tipoVenta: "Presencial",
   });
@@ -66,7 +66,7 @@ export default function VentaForm({}: VentaFormProps) {
   // --- Calculate total ---
   const totalVenta = useMemo(() => {
     return detalleVentaItems.reduce(
-      (sum, item) => sum + parseFloat(item.subtotal || "0"),
+      (sum, item) => sum + parseFloat(String(item.subtotal) || "0"),
       0
     );
   }, [detalleVentaItems]);
@@ -83,12 +83,12 @@ export default function VentaForm({}: VentaFormProps) {
       ...prev,
       {
         tempId: Date.now(), // Unique key for new item
-        prodVarianteId: "",
-        cantidad: "1",
-        precio_unit: "0.00",
-        descuento: "0.00",
-        subtotal: "0.00",
-        ventaId: "", // Will be filled on submit
+        prodVarianteId: 0,
+        cantidad: 1,
+        precio_unit: 0.00,
+        descuento: 0.00,
+        subtotal: 0.00,
+        ventaId: 0, // Will be filled on submit
       },
     ]);
   };
@@ -117,7 +117,7 @@ export default function VentaForm({}: VentaFormProps) {
 
             // --- FIX 1 ---
             // Asignación de precio más robusta. Si selectedVariant.precio es null o undefined, usa "0.00".
-            updatedItem.precio_unit = String(selectedVariant.precio || "0.00");
+            updatedItem.precio_unit = (selectedVariant.precio || 0.00);
 
             // console.log("handleDetalleChange: updatedItem.precio_unit after setting =", updatedItem.precio_unit); // Debugging
           } else {
@@ -126,10 +126,10 @@ export default function VentaForm({}: VentaFormProps) {
           }
 
           // Recalculate subtotal
-          const cantidad = parseFloat(updatedItem.cantidad || "0");
-          const precioUnit = parseFloat(updatedItem.precio_unit || "0");
-          const descuento = parseFloat(updatedItem.descuento || "0");
-          updatedItem.subtotal = String(
+          const cantidad = parseFloat(String(updatedItem.cantidad) || "0");
+          const precioUnit = parseFloat(String(updatedItem.precio_unit) || "0");
+          const descuento = parseFloat(String(updatedItem.descuento) || "0");
+          updatedItem.subtotal = Number(
             (cantidad * precioUnit - descuento).toFixed(2)
           );
           // console.log("handleDetalleChange: updatedItem.subtotal =", updatedItem.subtotal); // Debugging
@@ -165,7 +165,7 @@ export default function VentaForm({}: VentaFormProps) {
     }
     if (
       detalleVentaItems.some(
-        (item) => !item.prodVarianteId || parseFloat(item.cantidad || "0") <= 0
+        (item) => !item.prodVarianteId || parseFloat(String(item.cantidad) || "0") <= 0
       )
     ) {
       setError(
@@ -180,8 +180,8 @@ export default function VentaForm({}: VentaFormProps) {
       const ventaPayload: VentaSet = {
         ...ventaData,
         // Ensure IDs are strings, even if they come from select values
-        clienteID: String(ventaData.clienteID),
-        vendedorID: String(ventaData.vendedorID),
+        clienteID: (ventaData.clienteID),
+        vendedorID: (ventaData.vendedorID),
       };
 
       const createdVenta: VentaGet = await apiFetcher("/api/venta/venta", {
@@ -375,7 +375,7 @@ export default function VentaForm({}: VentaFormProps) {
                     <FormField label="Subtotal">
                       <input
                         type="text"
-                        value={parseFloat(item.subtotal || "0").toFixed(2)}
+                        value={parseFloat(String(item.subtotal) || "0").toFixed(2)}
                         readOnly
                         className="block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm sm:text-sm"
                       />

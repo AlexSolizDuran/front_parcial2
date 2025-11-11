@@ -45,7 +45,7 @@ export default function RegistroVentasPage() {
     return new Date(dateString).toLocaleDateString("es-BO", options);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (!confirm("¿Estás seguro de que deseas eliminar esta venta?")) return;
 
     try {
@@ -115,7 +115,7 @@ export default function RegistroVentasPage() {
                     {venta.metodoPago}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-semibold">
-                    {formatCurrency(venta.montoTotal)}
+                    {formatCurrency(String(venta.montoTotal))}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${

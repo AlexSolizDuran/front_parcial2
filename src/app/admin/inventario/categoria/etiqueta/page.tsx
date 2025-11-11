@@ -38,7 +38,7 @@ export default function EtiquetaList() {
     handleCerrarModal();
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     try {
       await apiFetcher(`/api/producto/etiqueta/${id}`, {
         method: "DELETE",

@@ -25,7 +25,7 @@ export default function EditarProdVariantePage() {
   return (
     <div>
       <h1 className="text-3xl font-bold text-gray-800 mb-6">
-        Editar Variante: {variante.producto.nombre} ({variante.color.nombre}, {variante.talla.nombre})
+        Editar Variante: {variante.producto.nombre} ({variante.color.nombre}, {variante.talla.talla})
       </h1>
       <ProdVarianteForm varianteParaEditar={variante} />
     </div>

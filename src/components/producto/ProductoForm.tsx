@@ -26,15 +26,12 @@ export default function ProductoForm({
 }: ProductoFormProps) {
   const router = useRouter();
 
-  // Separate state for 'nombre' as per user requirement
-  const [nombre, setNombre] = useState("");
-
   const [data, setData] = useState<ProductoSetState>({
     descripcion: "",
-    modelo: "",
-    categoria: "",
-    material: "",
-    etiquetas: [],
+    modelo: 0,
+    categoria: 0,
+    material: 0,
+    etiquetas: [] as number[],
   });
 
   const [imagenFile, setImagenFile] = useState<File | null>(null);
@@ -54,7 +51,6 @@ export default function ProductoForm({
 
   useEffect(() => {
     if (isEditMode && productoParaEditar) {
-      setNombre(productoParaEditar.nombre);
       setData({
         descripcion: productoParaEditar.descripcion,
         modelo: productoParaEditar.modelo,
@@ -76,7 +72,7 @@ export default function ProductoForm({
       const selectedOptions = Array.from(
         (e.target as HTMLSelectElement).selectedOptions
       ).map((option) => option.value);
-      setData((prev) => ({ ...prev, etiquetas: selectedOptions }));
+      setData((prev) => ({ ...prev, etiquetas: selectedOptions.map(Number) }));
     } else {
       setData((prev) => ({ ...prev, [name]: value }));
     }
@@ -99,32 +95,27 @@ export default function ProductoForm({
     setIsSaving(true);
     setError(null);
 
-    // The validation for 'nombre' is kept for the UI, even if it's not sent.
-    if (!nombre || !data.categoria || !data.modelo) {
-      setError("Nombre, Modelo y Categoría son obligatorios.");
+    // Validación de UI
+    if (!data.categoria || !data.modelo) {
+      setError("Modelo y Categoría son obligatorios.");
       setIsSaving(false);
       return;
     }
 
+    // Crear FormData
     const formData = new FormData();
 
-    // Append all fields from the 'data' state, which matches ProductoSet (excluding imagen)
-    Object.entries(data).forEach(([key, value]) => {
-      if (key !== "etiquetas") {
-        // @ts-ignore
-        formData.append(key, value);
-      }
-    });
+    // Convertir el objeto 'data' a JSON y agregarlo como Blob
+    const productoData = { ...data, etiquetas: data.etiquetas }; // aseguramos que etiquetas se incluya
+    formData.append(
+      "producto",
+      new Blob([JSON.stringify(productoData)], { type: "application/json" })
+    );
 
-    data.etiquetas.forEach((etiquetaId) => {
-      formData.append("etiquetas", etiquetaId);
-    });
-
+    // Agregar imagen opcional
     if (imagenFile) {
       formData.append("imagen", imagenFile);
     }
-
-    // IMPORTANT: As per user instruction, 'nombre' is NOT appended to formData.
 
     try {
       const result: ProductoGet = await apiFetcher(
@@ -134,8 +125,11 @@ export default function ProductoForm({
         {
           method: isEditMode ? "PUT" : "POST",
           body: formData,
+          // ⚠️ No pongas Content-Type, el navegador lo agrega automáticamente
+          // headers: { "Content-Type": "multipart/form-data" } ❌
         }
       );
+
       router.push(`/admin/inventario/catalogo/${result.id}`);
       router.refresh();
     } catch (err: any) {
@@ -249,7 +243,7 @@ export default function ProductoForm({
             <FormField label="Asignar etiquetas">
               <select
                 name="etiquetas"
-                value={data.etiquetas}
+                value={data.etiquetas.map(String)}
                 onChange={handleChange}
                 multiple
                 className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm h-40"

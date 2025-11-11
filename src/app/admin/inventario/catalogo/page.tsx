@@ -18,7 +18,7 @@ export default function CatalogoList() {
   const modeloMap = useMemo(() => new Map(modelos?.map(m => [m.id, m.nombre])), [modelos]);
 
   // --- CRUD Operations ---
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (confirm("¿Estás seguro de que quieres eliminar este producto?")) {
       try {
         await apiFetcher(`/api/producto/producto/${id}`, { method: "DELETE" });

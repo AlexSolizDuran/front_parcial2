@@ -37,7 +37,7 @@ export default function ColorList() {
     handleCerrarModal();
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id:number) => {
     try {
       await apiFetcher(`/api/inventario/color/${id}`, {
         method: "DELETE",

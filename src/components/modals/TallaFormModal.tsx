@@ -18,7 +18,7 @@ export default function TallaFormModal({
   tallaParaEditar,
 }: TallaFormModalProps) {
   const [data, setData] = useState<TallaSet>({
-    nombre: "",
+    talla: "",
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,9 +39,9 @@ export default function TallaFormModal({
   useEffect(() => {
     if (isOpen) {
       if (isEditMode && tallaParaEditar) {
-        setData({ nombre: tallaParaEditar.nombre });
+        setData({ talla: tallaParaEditar.talla });
       } else {
-        setData({ nombre: "" });
+        setData({ talla: "" });
       }
       setError(null);
       setIsSaving(false);
@@ -53,8 +53,8 @@ export default function TallaFormModal({
     setIsSaving(true);
     setError(null);
 
-    if (!data.nombre.trim()) {
-      setError("El nombre es obligatorio.");
+    if (!data.talla.trim()) {
+      setError("El talla es obligatorio.");
       setIsSaving(false);
       return;
     }
@@ -108,16 +108,16 @@ export default function TallaFormModal({
 
             <div>
               <label
-                htmlFor="nombre"
+                htmlFor="talla"
                 className="block text-sm font-medium text-gray-700"
               >
-                Nombre
+                Talla
               </label>
               <input
                 type="text"
-                id="nombre"
-                name="nombre"
-                value={data.nombre}
+                id="talla"
+                name="talla"
+                value={data.talla}
                 onChange={handleChange}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 required

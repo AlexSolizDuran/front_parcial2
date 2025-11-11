@@ -1,5 +1,5 @@
 interface MaterialGet {
-  id: string;
+  id: number;
   nombre: string;
 }
 

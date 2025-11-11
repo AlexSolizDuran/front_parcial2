@@ -24,7 +24,7 @@ export default function ModeloList() {
   const { marcas, isLoadingMarcas } = useMarcas();
 
   const marcaMap = useMemo(() => {
-    const map = new Map<string, string>();
+    const map = new Map<number, string>();
     if (marcas) {
       for (const marca of marcas) {
         map.set(marca.id, marca.nombre);
@@ -53,7 +53,7 @@ export default function ModeloList() {
     handleCerrarModal();
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     try {
       await apiFetcher(`/api/producto/modelo/${id}`, {
         method: "DELETE",

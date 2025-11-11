@@ -1,10 +1,10 @@
 interface ModeloGet {
-  id: string;
+  id: number;
   nombre: string;
-  marcaId: string;
+  marcaId: number;
 }
 interface ModeloSet {
   nombre: string;
-  marcaId: string;
+  marcaId: number;
 }
 export type { ModeloGet, ModeloSet };

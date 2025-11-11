@@ -1,48 +1,17 @@
 "use client";
-import { useMemo } from "react";
-import useSWR from "swr";
+
 import Link from "next/link";
 import { apiFetcher } from "@/lib/apiFetcher";
-import { ProdVarianteGet, ProdVarianteList } from "@/types/stock/prodVariante";
-import { ProductoGet } from "@/types/catalogo/producto";
-import { ColorGet } from "@/types/categorias/color";
-import { TallaGet } from "@/types/categorias/talla";
+import { useProdVariantes } from "@/hooks/useProdVariantes";
 
 export default function StockList() {
   // --- Main Data Fetching ---
   const {
-    data: variantes,
-    error,
-    isLoading: isLoadingVariantes,
-    mutate,
-  } = useSWR<ProdVarianteList[]>("/api/inventario/prodVariante", apiFetcher);
-
-  // --- Fetching Related Data for Mapping ---
-  const { data: productos, isLoading: isLoadingProductos } = useSWR<
-    ProductoGet[]
-  >("/api/producto/producto", apiFetcher);
-  const { data: colores, isLoading: isLoadingColores } = useSWR<ColorGet[]>(
-    "/api/inventario/color",
-    apiFetcher
-  );
-  const { data: tallas, isLoading: isLoadingTallas } = useSWR<TallaGet[]>(
-    "/api/inventario/talla",
-    apiFetcher
-  );
-
-  // --- Memoized Maps for Display ---
-  const productoMap = useMemo(
-    () => new Map(productos?.map((p) => [p.id, p.nombre])),
-    [productos]
-  );
-  const colorMap = useMemo(
-    () => new Map(colores?.map((c) => [c.id, c.nombre])),
-    [colores]
-  );
-  const tallaMap = useMemo(
-    () => new Map(tallas?.map((t) => [t.id, t.talla])),
-    [tallas]
-  );
+    prodVariantes,
+    isLoadingProdVariantes,
+    errorProdVariantes,
+    mutateProdVariantes: mutate,
+  } = useProdVariantes();
 
   const handleDelete = async (id: string) => {
     if (
@@ -60,14 +29,8 @@ export default function StockList() {
     }
   };
 
-  const isLoading =
-    isLoadingVariantes ||
-    isLoadingProductos ||
-    isLoadingColores ||
-    isLoadingTallas;
-
-  if (isLoading) return <div>Cargando stock...</div>;
-  if (error) return <div>Error al cargar el stock.</div>;
+  if (isLoadingProdVariantes) return <div>Cargando stock...</div>;
+  if (errorProdVariantes) return <div>Error al cargar el stock.</div>;
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
@@ -81,7 +44,8 @@ export default function StockList() {
         </Link>
       </div>
 
-      {(!variantes || variantes.length === 0) && !isLoading ? (
+      {(!prodVariantes || prodVariantes.length === 0) &&
+      !isLoadingProdVariantes ? (
         <div className="text-center py-10 text-gray-500">
           No hay variantes de stock registradas.
         </div>
@@ -113,16 +77,16 @@ export default function StockList() {
             </tr>
           </thead>
           <tbody>
-            {variantes?.map((v) => (
+            {prodVariantes?.map((v) => (
               <tr key={v.id} className="hover:bg-gray-50">
                 <td className="p-3 border-b border-gray-200 font-medium">
-                  {productoMap.get(v.producto) || "No especificado"}
+                  {v.producto || "No especificado"}
                 </td>
                 <td className="p-3 border-b border-gray-200">
-                  {colorMap.get(v.color) || "No especificado"}
+                  {v.color || "No especificado"}
                 </td>
                 <td className="p-3 border-b border-gray-200">
-                  {tallaMap.get(v.talla) || "No especificado"}
+                  {v.talla || "No especificado"}
                 </td>
                 <td className="p-3 border-b border-gray-200 font-mono text-sm">
                   {v.sku}
@@ -131,7 +95,7 @@ export default function StockList() {
                   {v.stock}
                 </td>
                 <td className="p-3 border-b border-gray-200 text-right">
-                  ${parseFloat(v.precio).toFixed(2)}
+                  ${parseFloat(String(v.precio)).toFixed(2)}
                 </td>
                 <td className="p-3 border-b border-gray-200 flex items-center gap-2">
                   <Link

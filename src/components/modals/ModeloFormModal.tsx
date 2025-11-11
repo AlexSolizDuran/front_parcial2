@@ -23,7 +23,7 @@ export default function ModeloFormModal({
 }: ModeloFormModalProps) {
   const [data, setData] = useState<ModeloSet>({
     nombre: "",
-    marcaId: "",
+    marcaId: 0,
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +52,7 @@ export default function ModeloFormModal({
           marcaId: modeloParaEditar.marcaId,
         });
       } else {
-        setData({ nombre: "", marcaId: "" });
+        setData({ nombre: "", marcaId: 0 });
       }
       setError(null);
       setIsSaving(false);

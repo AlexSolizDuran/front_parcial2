@@ -18,7 +18,7 @@ export default function ClienteListPage() {
     apiFetcher
   );
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (confirm("¿Estás seguro de que quieres eliminar este cliente?")) {
       try {
         await apiFetcher(`/api/usuario/usuario/${id}`, { method: "DELETE" });

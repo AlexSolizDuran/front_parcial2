@@ -3,7 +3,7 @@ import useSWR from "swr";
 import { apiFetcher } from "@/lib/apiFetcher";
 import { VentaGet } from "@/types/venta/venta";
 import { useAuthUser } from "@/hooks/useAuthUser";
-import { useMemo } from "react";
+import Link from "next/link"; // Import Link from next/link
 
 export default function HistorialComprasPage() {
   const authUser = useAuthUser();
@@ -66,6 +66,9 @@ export default function HistorialComprasPage() {
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Fecha Venta
                 </th>
+                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Acciones
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -78,7 +81,7 @@ export default function HistorialComprasPage() {
                     {venta.metodoPago}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-semibold">
-                    {formatCurrency(venta.montoTotal)}
+                    {formatCurrency(String(venta.montoTotal))}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -91,6 +94,14 @@ export default function HistorialComprasPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                     {formatDate(venta.fechaVenta)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    <Link
+                      href={`/cliente/historial/${venta.id}`}
+                      className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      Ver Detalle
+                    </Link>
                   </td>
                 </tr>
               ))}

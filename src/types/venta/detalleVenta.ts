@@ -1,20 +1,20 @@
 interface DetalleVentaGet{
-    id:string,
-    cantidad:string,
-    precio_unit:string,
-    descuento:string,
-    subtotal:string,
-    ventaId:string,
-    prodVarianteId:string
+    id:number,
+    cantidad:number,
+    precio_unit:number,
+    descuento:number,
+    subtotal:number,
+    ventaId:number,
+    prodVarianteId:number
 }
 
 interface DetalleVentaSet{
-    cantidad:string,
-    precio_unit:string,
-    descuento:string,
-    subtotal:string,
-    ventaId:string,
-    prodVarianteId:string
+    cantidad:number,
+    precio_unit:number,
+    descuento:number,
+    subtotal:number,
+    ventaId:number,
+    prodVarianteId:number
 
 }
 export type {DetalleVentaGet,DetalleVentaSet}

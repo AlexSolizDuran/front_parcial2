@@ -145,7 +145,7 @@ export default function VentaDetallePage() {
           <DetailItem label="Estado del Pedido" value={venta.estadoPedido} />
           <DetailItem
             label="Monto Total"
-            value={formatCurrency(venta.montoTotal)}
+            value={formatCurrency(String(venta.montoTotal))}
           />
         </dl>
       </div>
@@ -216,13 +216,13 @@ export default function VentaDetallePage() {
                         {detalle.cantidad}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
-                        {formatCurrency(detalle.precio_unit)}
+                        {formatCurrency(String(detalle.precio_unit))}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
-                        {formatCurrency(detalle.descuento)}
+                        {formatCurrency(String(detalle.descuento))}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                        {formatCurrency(detalle.subtotal)}
+                        {formatCurrency(String(detalle.subtotal))}
                       </td>
                     </tr>
                   );

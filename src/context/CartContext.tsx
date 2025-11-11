@@ -80,7 +80,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       try {
         const newCart = await apiFetcher<CarritoGet>("/api/venta/carrito", {
           method: "POST",
-          body: JSON.stringify({ clienteId: parseInt(user.id) }),
+          body: JSON.stringify({ clienteId: user.id }),
         });
         setCartId(newCart.id);
         return newCart.id;

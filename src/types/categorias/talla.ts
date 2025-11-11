@@ -1,5 +1,5 @@
 interface TallaGet {
-  id: string;
+  id: number;
   talla: string;
 }
 interface TallaSet {

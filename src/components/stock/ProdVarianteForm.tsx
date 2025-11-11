@@ -23,14 +23,13 @@ export default function ProdVarianteForm({
 }: ProdVarianteFormProps) {
   const router = useRouter();
   const [data, setData] = useState<ProdVarianteSet>({
-    producto: "",
-    color: "",
-    talla: "",
-    costo: "",
-    ppp: "",
-    precio: "",
+    producto: 0,
+    color: 0,
+    talla: 0,
+    costo: 0,
+    precio: 0,
     sku: "",
-    stock: "",
+    stock: 0,
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,12 +46,11 @@ export default function ProdVarianteForm({
       setData({
         producto: varianteParaEditar.producto.id,
         color: varianteParaEditar.color.id,
-        talla: varianteParaEditar.talla.id,
-        costo: String(varianteParaEditar.costo),
-        ppp: String(varianteParaEditar.ppp),
-        precio: String(varianteParaEditar.precio),
+        talla: Number(varianteParaEditar.talla.id),
+        costo: (varianteParaEditar.costo),
+        precio: (varianteParaEditar.precio),
         sku: String(varianteParaEditar.sku),
-        stock: String(varianteParaEditar.stock),
+        stock: (varianteParaEditar.stock),
       });
     }
   }, [isEditMode, varianteParaEditar]);
@@ -175,16 +173,6 @@ export default function ProdVarianteForm({
                   step="0.01"
                   name="costo"
                   value={data.costo}
-                  onChange={handleChange}
-                  className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
-              </FormField>
-              <FormField label="PPP (Precio Promedio Ponderado)">
-                <input
-                  type="number"
-                  step="0.01"
-                  name="ppp"
-                  value={data.ppp}
                   onChange={handleChange}
                   className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />

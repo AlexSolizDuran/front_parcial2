@@ -21,7 +21,7 @@ export default function CategoriaFormModal({
   // Estado interno del formulario
   const [data, setData] = useState<CategoriaSet>({
     nombre: "",
-    padreId: "",
+    padreId: 0,
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +41,7 @@ export default function CategoriaFormModal({
     if (!isOpen) {
       setData({
         nombre: "",
-        padreId: "",
+        padreId: 0,
       });
       setError(null);
       setIsSaving(false);
@@ -54,12 +54,12 @@ export default function CategoriaFormModal({
         if (categoriaParaEditar) {
           setData({
             nombre: categoriaParaEditar.nombre,
-            padreId: categoriaParaEditar.padreId || "", // Convierte null a ""
+            padreId: categoriaParaEditar.padreId || 0, // Convierte null a ""
           });
         }
       } else {
         // Si es modo creación, resetea el formulario
-        setData({ nombre: "", padreId: "" });
+        setData({ nombre: "", padreId: 0 });
       }
       // Limpia errores al abrir
       setError(null);

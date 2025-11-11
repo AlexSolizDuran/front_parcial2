@@ -1,5 +1,5 @@
 interface ColorGet {
-  id: string;
+  id: number;
   nombre: string;
   codHexa: string;
 }

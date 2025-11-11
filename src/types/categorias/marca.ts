@@ -1,5 +1,5 @@
 interface MarcaGet {
-  id: string;
+  id: number;
   nombre: string;
 }
 

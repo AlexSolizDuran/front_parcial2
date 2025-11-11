@@ -55,16 +55,7 @@ function CartItemRow({ item }: { item: ItemCarritoGet }) {
       {/* ... (Columna de Producto se mantiene igual) ... */}
       <td className="p-4">
         <div className="flex items-center space-x-4">
-          <div className="relative h-16 w-16 rounded bg-gray-100">
-            {variante.imagen ? (
-              <Image
-                src={variante.imagen}
-                alt={variante.producto.nombre}
-                fill
-                className="object-cover"
-              />
-            ) : null}
-          </div>
+          
           <div>
             <p className="font-medium text-gray-900">
               {variante.producto.nombre}

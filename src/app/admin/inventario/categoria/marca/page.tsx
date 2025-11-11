@@ -37,7 +37,7 @@ export default function MarcaList() {
     handleCerrarModal();
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     try {
       await apiFetcher(`/api/producto/marca/${id}`, {
         method: "DELETE",

@@ -1,18 +1,18 @@
 interface VentaGet{
-    id:string,
-    numeroVenta:string,
-    clienteId:string,
-    vendedorId:string,
+    id:number,
+    numeroVenta:number,
+    clienteId:number,
+    vendedorId:number,
     metodoPago:string,
     tipoVendta:string,
-    montoTotal:string,
+    montoTotal:number,
     estadoPedido:string,
     fechaVenta:string
 }
 
 interface VentaSet{
-    clienteID:string,
-    vendedorID:string,
+    clienteID:number,
+    vendedorID:number,
     metodoPago:string,
     tipoVenta:string,
 }

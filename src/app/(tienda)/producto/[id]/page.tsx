@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetcher } from "@/lib/apiFetcher";
-import { ProdVarianteGet } from "@/types/inventario/prodVariante";
+import { ProdVarianteGet } from "@/types/stock/prodVariante";
 import { Loader2, ShoppingCart, Plus, Minus } from "lucide-react"; // <-- Importar Plus/Minus
 import { useCart } from "@/context/CartContext";
 import { useState } from "react"; // <-- Importar useState

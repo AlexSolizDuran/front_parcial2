@@ -38,7 +38,7 @@ export default function MaterialList() {
     handleCerrarModal();
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     try {
       await apiFetcher(`/api/producto/material/${id}`, {
         method: "DELETE",

@@ -1,14 +1,14 @@
 interface CategoriaGet {
-  id: string;
+  id: number;
   nombre: string;
-  padreId:string
+  padreId:number
 }
 interface CategoriaSet {
   nombre: string;
-  padreId: string;
+  padreId: number;
 }
 interface CategoriaTree {
-  id: string;
+  id: number;
   nombre: string;
   hijos: CategoriaTree[];
 }

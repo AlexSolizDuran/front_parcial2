@@ -1,5 +1,5 @@
 interface EtiquetaGet {
-  id: string;
+  id: number;
   nombre: string;
 }
 interface EtiqueteSet {

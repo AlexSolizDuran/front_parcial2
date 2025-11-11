@@ -1,10 +1,10 @@
 interface UsuarioGet {
-  id: string;
+  id: number;
   nombre: string;
   apellido: string;
   email: string;
   username: string;
-  telefono: string;
+  telefono: number;
   rolNombre: string;
 }
 interface UsuarioSet {
@@ -13,11 +13,11 @@ interface UsuarioSet {
   email: string;
   password: string;
   username: string;
-  telefono: string;
-  rolId: string;
+  telefono: number;
+  rolId: number;
 }
 interface UsuarioList {
-  id: string;
+  id: number;
   username: string;
   nombre: string;
   apellido:string;

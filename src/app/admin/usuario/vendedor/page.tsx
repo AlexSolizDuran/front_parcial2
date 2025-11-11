@@ -15,7 +15,7 @@ export default function ClienteListPage() {
 
   const { data, error, isLoading, mutate } = useSWR<Paginacion<UsuarioList>>(api_url, apiFetcher);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (confirm("¿Estás seguro de que quieres eliminar este cliente?")) {
       try {
         await apiFetcher(`/api/usuario/usuario/${id}`, { method: "DELETE" });
@@ -28,19 +28,22 @@ export default function ClienteListPage() {
     }
   };
 
-  if (isLoading) return <div>Cargando clientes...</div>;
-  if (error) return <div>Error al cargar los clientes.</div>;
+  if (isLoading) return <div>Cargando Vendedores...</div>;
+  if (error) return <div>Error al cargar los Vendedores.</div>;
   
   if (!data) return <div className="text-center py-10 text-gray-500">No se encontraron datos.</div>;
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Gestión de Clientes</h2>
+        <h2 className="text-xl font-bold">Gestión de Vendedores</h2>
+        <Link href="/admin/usuario/vendedor/crear" className="text-sm bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+          Añadir Vendedor
+        </Link>
       </div>
 
       {(data.empty || data.content.length === 0) ? (
-        <div className="text-center py-10 text-gray-500">No hay clientes registrados.</div>
+        <div className="text-center py-10 text-gray-500">No hay Vendedores registrados.</div>
       ) : (
         <table className="w-full min-w-full table-auto border-collapse border border-gray-200">
           <thead className="bg-gray-100">
@@ -58,7 +61,7 @@ export default function ClienteListPage() {
                 <td className="p-3 border-b border-gray-200">{cliente.nombre}</td>
                 <td className="p-3 border-b border-gray-200">{cliente.email}</td>
                 <td className="p-3 border-b border-gray-200 flex items-center gap-2">
-                  <Link href={`/admin/usuario/cliente/${cliente.id}`} className="text-sm bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600">
+                  <Link href={`/admin/usuario/vendedor/${cliente.id}`} className="text-sm bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600">
                     Ver
                   </Link>
                   <button onClick={() => handleDelete(cliente.id)} className="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
@@ -73,7 +76,7 @@ export default function ClienteListPage() {
 
       <div className="flex justify-between items-center mt-6">
         <span className="text-sm text-gray-700">
-          Mostrando {data.numberOfElements} de {data.totalElements} clientes
+          Mostrando {data.numberOfElements} de {data.totalElements} Vendedores
         </span>
         <div className="flex items-center gap-3">
           <button

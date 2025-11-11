@@ -1,5 +1,5 @@
 // src/types/venta/itemCarrito.ts
-import { ProdVarianteGet } from "../inventario/prodVariante"; // <-- AÑADIR IMPORT
+import { ProdVarianteGet } from "@/types/stock/prodVariante"; // <-- AÑADIR IMPORT
 
 /**
  * Representa el DTO: ItemCarritoResponseDTO

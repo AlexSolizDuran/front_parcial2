@@ -10,11 +10,11 @@ interface ProductoGet {
 }
 interface ProductoSet {
   descripcion: string;
-  modelo: string; // Al enviar, el ID se convierte a string (JSON)
-  categoria: string; // Al enviar, el ID se convierte a string
+  modelo: number; // Al enviar, el ID se convierte a string (JSON)
+  categoria: number; // Al enviar, el ID se convierte a string
   imagen:string;
-  material: string; // Al enviar, el ID se convierte a string
-  etiquetas: string[]; // Al enviar, los IDs se convierten a string
+  material: number; // Al enviar, el ID se convierte a string
+  etiquetas: number[]; // Al enviar, los IDs se convierten a string
 }
 
 export type { ProductoGet, ProductoSet };
