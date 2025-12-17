@@ -2,23 +2,22 @@
 
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
+import { Suspense } from "react"; // <--- 1. Importamos Suspense
 import { apiFetcher } from "@/lib/apiFetcher";
 import { ProductoGet } from "@/types/catalogo/producto";
-import ProductCard from "@/components/tienda/ProductCard"; // Asegúrate de tener este componente
+import ProductCard from "@/components/tienda/ProductCard";
 import { Loader2, SearchX, ShoppingBag } from "lucide-react";
 
-export default function CatalogoPage() {
+// 2. Renombramos tu componente original y le quitamos el "export default"
+// Este componente contiene la lógica que necesita "useSearchParams"
+function ContenidoCatalogo() {
   const searchParams = useSearchParams();
-  const busqueda = searchParams.get("buscar"); // Lee ?buscar=camisa de la URL
+  const busqueda = searchParams.get("buscar");
 
-  // 1. Construir la URL del endpoint
-  // Si hay búsqueda: /api/producto/producto?buscar=camisa
-  // Si no hay búsqueda: /api/producto/producto (Trae todo)
   const endpoint = busqueda 
     ? `/api/producto/producto?buscar=${encodeURIComponent(busqueda)}`
     : "/api/producto/producto";
 
-  // 2. Fetch de datos
   const { data: productos, error, isLoading } = useSWR<ProductoGet[]>(endpoint, apiFetcher);
 
   return (
@@ -39,7 +38,7 @@ export default function CatalogoPage() {
         )}
       </div>
 
-      {/* --- ESTADO DE CARGA --- */}
+      {/* --- ESTADO DE CARGA (API) --- */}
       {isLoading && (
         <div className="flex flex-col justify-center items-center py-20">
           <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
@@ -70,7 +69,6 @@ export default function CatalogoPage() {
               ))}
             </div>
           ) : (
-            // --- ESTADO VACÍO (NO SE ENCONTRÓ NADA) ---
             <div className="text-center py-20 bg-gray-50 rounded-xl border border-gray-100 border-dashed">
               <div className="flex justify-center mb-4">
                 {busqueda ? (
@@ -97,5 +95,20 @@ export default function CatalogoPage() {
         </>
       )}
     </div>
+  );
+}
+
+// 3. Creamos un nuevo componente principal que envuelve todo en Suspense
+// Este es el que Next.js renderizará como página
+export default function CatalogoPage() {
+  return (
+    // El fallback se muestra mientras Next.js determina los searchParams en el cliente
+    <Suspense fallback={
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+      </div>
+    }>
+      <ContenidoCatalogo />
+    </Suspense>
   );
 }
