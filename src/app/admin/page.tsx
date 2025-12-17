@@ -1,145 +1,172 @@
 "use client";
-import Link from "next/link";
+import useSWR from "swr";
+import { apiFetcher } from "@/lib/apiFetcher";
 import {
-  Package,
   Users,
-  ShoppingCart,
-  LayoutGrid,
-  Tag,
-  Bookmark,
-  Puzzle,
-  Layers,
-  Palette,
-  Ruler,
-  User,
+  ShoppingBag,
+  Package,
+  TrendingUp,
   DollarSign,
-  ListOrdered,
-  PlusCircle,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+// Importamos los componentes del gráfico
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
-import React from "react";
-
-interface AdminCardProps {
-  title: string;
-  description: string;
-  href: string;
-  Icon: LucideIcon;
-  bgColor: string;
+interface DashboardData {
+  cards: {
+    totalVentas: number;
+    totalProductos: number;
+    usuariosRegistrados: number;
+  };
+  chartData: { fecha: string; total: number }[];
+  recentSales: {
+    id: number;
+    usuario: string;
+    total: number;
+    fecha: string;
+    estado: string;
+  }[];
 }
 
-const AdminCard: React.FC<AdminCardProps> = ({
-  title,
-  description,
-  href,
-  Icon,
-  bgColor,
-}) => (
-  <Link
-    href={href}
-    className={`block p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out ${bgColor} text-white`}
-  >
-    <div className="flex items-center mb-4">
-      <Icon size={32} className="mr-4" />
-      <h3 className="text-xl font-bold">{title}</h3>
-    </div>
-    <p className="text-sm opacity-90">{description}</p>
-  </Link>
-);
-
-import { useAuthUser } from "@/hooks/useAuthUser";
-
 export default function AdminDashboardPage() {
-  const user = useAuthUser();
-  const rol = user?.rolNombre;
+  const { data, error } = useSWR<DashboardData>(
+    "/api/reportes/dashboard/resumen",
+    apiFetcher
+  );
+  const isLoading = !data && !error;
+
+  // Componente de Tarjeta
+  const StatCard = ({ title, value, icon: Icon, color }: any) => (
+    <div className="bg-white overflow-hidden rounded-lg shadow-sm border border-gray-100 p-5 flex items-center">
+      <div className={`flex-shrink-0 rounded-full p-3 ${color} bg-opacity-10`}>
+        <Icon className={`h-6 w-6 ${color.replace("bg-", "text-")}`} />
+      </div>
+      <div className="ml-5">
+        <dt className="text-sm font-medium text-gray-500 truncate">{title}</dt>
+        <dd className="text-2xl font-bold text-gray-900">
+          {isLoading ? "..." : value}
+        </dd>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">
-        Panel 
-      </h1>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-gray-800">Panel de Control</h1>
 
-      {/* Sección de Inventario */}
-      {rol === "ROLE_ADMIN" && (
-        <section className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-800 mb-6 border-l-4 border-blue-500 pl-4">
-            Gestión de Inventario
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AdminCard
-              title="Categorías y Atributos"
-              description="Administra categorías, marcas, modelos, materiales, etiquetas, colores y tallas."
-              href="/admin/inventario/categoria"
-              Icon={LayoutGrid}
-              bgColor="bg-blue-600 hover:bg-blue-700"
-            />
-            <AdminCard
-              title="Catálogo de Productos"
-              description="Gestiona la información detallada de todos los productos."
-              href="/admin/inventario/catalogo"
-              Icon={Package}
-              bgColor="bg-green-600 hover:bg-green-700"
-            />
-            <AdminCard
-              title="Stock de Variantes"
-              description="Controla el inventario y las variantes de cada producto."
-              href="/admin/inventario/stock"
-              Icon={ListOrdered}
-              bgColor="bg-purple-600 hover:bg-purple-700"
-            />
+      {/* 1. TARJETAS SUPERIORES */}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <StatCard
+          title="Ventas Totales"
+          value={data?.cards.totalVentas || 0}
+          icon={TrendingUp}
+          color="bg-green-500"
+        />
+        <StatCard
+          title="Productos"
+          value={data?.cards.totalProductos || 0}
+          icon={Package}
+          color="bg-blue-500"
+        />
+        <StatCard
+          title="Usuarios"
+          value={data?.cards.usuariosRegistrados || 0}
+          icon={Users}
+          color="bg-purple-500"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* 2. GRÁFICO DE BARRAS (Ocupa 2 columnas) */}
+        <div className="bg-white shadow-sm rounded-lg p-6 lg:col-span-2 border border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            Ingresos: Últimos 7 Días
+          </h3>
+          <div className="h-72 w-full">
+            {isLoading ? (
+              <div className="h-full flex items-center justify-center text-gray-400">
+                Cargando gráfico...
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data?.chartData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis
+                    dataKey="fecha"
+                    tickFormatter={(str) => str.substring(5)} // Mostrar solo MM-DD
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    // CORRECCIÓN: Usamos 'any' o 'number | undefined' para evitar el error de TS
+                    formatter={(value: any) => [`$${value}`, "Ventas"]}
+                    labelFormatter={(label) => `Fecha: ${label}`}
+                    contentStyle={{
+                      backgroundColor: "#fff",
+                      borderRadius: "8px",
+                      border: "1px solid #e5e7eb",
+                    }}
+                  />
+                  <Bar dataKey="total" fill="#4F46E5" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
-        </section>
-      )}
+        </div>
 
-      {/* Sección de Usuarios */}
-      {rol === "ROLE_ADMIN" && (
-        <section className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-800 mb-6 border-l-4 border-yellow-500 pl-4">
-            Gestión de Usuarios
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AdminCard
-              title="Clientes"
-              description="Administra la información de los clientes registrados."
-              href="/admin/usuario/cliente"
-              Icon={User}
-              bgColor="bg-yellow-600 hover:bg-yellow-700"
-            />
-            <AdminCard
-              title="Vendedores"
-              description="Gestiona las cuentas de los vendedores de la tienda."
-              href="/admin/usuario/vendedor"
-              Icon={User}
-              bgColor="bg-orange-600 hover:bg-orange-700"
-            />
+        {/* 3. LISTA DE ACTIVIDAD RECIENTE (Ocupa 1 columna) */}
+        <div className="bg-white shadow-sm rounded-lg p-6 border border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            Ventas Recientes
+          </h3>
+          <div className="flow-root">
+            <ul role="list" className="-my-5 divide-y divide-gray-200">
+              {data?.recentSales.map((venta) => (
+                <li key={venta.id} className="py-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-shrink-0">
+                      <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-green-100">
+                        <DollarSign className="h-5 w-5 text-green-600" />
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        Cliente: {venta.usuario}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {new Date(venta.fecha).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="inline-flex items-center text-sm font-semibold text-gray-900">
+                      ${venta.total}
+                    </div>
+                  </div>
+                </li>
+              ))}
+              {!isLoading && data?.recentSales.length === 0 && (
+                <p className="text-sm text-gray-500 py-4">
+                  No hay ventas recientes.
+                </p>
+              )}
+            </ul>
           </div>
-        </section>
-      )}
-
-      {/* Sección de Ventas */}
-      {(rol === "ROLE_ADMIN" || rol === "ROLE_VENDEDOR") && (
-        <section>
-          <h2 className="text-3xl font-bold text-gray-800 mb-6 border-l-4 border-red-500 pl-4">
-            Gestión de Ventas
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AdminCard
-              title="Registro de Ventas"
-              description="Visualiza y gestiona todas las transacciones de venta."
+          <div className="mt-6">
+            <a
               href="/admin/venta/registro"
-              Icon={ShoppingCart}
-              bgColor="bg-red-600 hover:bg-red-700"
-            />
-            <AdminCard
-              title="Registrar Nueva Venta"
-              description="Crea una nueva nota de venta para un cliente."
-              href="/admin/venta/nota_venta"
-              Icon={PlusCircle}
-              bgColor="bg-pink-600 hover:bg-pink-700"
-            />
+              className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            >
+              Ver todas
+            </a>
           </div>
-        </section>
-      )}
+        </div>
+      </div>
     </div>
   );
 }

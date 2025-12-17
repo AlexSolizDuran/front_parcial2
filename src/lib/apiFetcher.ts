@@ -73,3 +73,24 @@ export const apiFetcher = async <T>(
         throw err; // Re-lanzamos para que SWR, React Query, etc., lo detecten.
     }
 };
+
+
+export const getPronosticoProducto = async (productoId: number, fecha?: string) => {
+  const token = localStorage.getItem('token');
+  
+  // Construimos la URL con la fecha si existe
+  let url = `/api/reportes/pronostico/${productoId}`;
+  if (fecha) {
+    url += `?fecha=${fecha}`;
+  }
+
+  const res = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+  
+  if (!res.ok) throw new Error('Error al conectar con el servicio de IA');
+  return res.json();
+};

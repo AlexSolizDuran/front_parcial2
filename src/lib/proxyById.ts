@@ -17,7 +17,9 @@ export async function proxyById(
 
   const token = req.cookies.get("jwt-token")?.value;
   
-  const backendUrl = `${process.env.API_URL}/${endpoint}/${id}`;
+  const { searchParams } = new URL(req.url);
+  const queryString = searchParams.toString() ? `?${searchParams.toString()}` : "";
+  const backendUrl = `${process.env.API_URL}/${endpoint}/${id}${queryString}`;
 
   const headers: HeadersInit = {
     Authorization: `Bearer ${token}`,

@@ -13,6 +13,7 @@ import {
   Store,
   Loader2,
   ClipboardList,
+  Search,
 } from "lucide-react";
 import { UsuarioGet } from "@/types/usuario/usuario";
 import { CategoriaTree } from "@/types/categorias/categoria";
@@ -27,12 +28,21 @@ export default function Navbar() {
   const router = useRouter();
   const { itemCount } = useCart(); // <-- 2. Obtener itemCount
 
+  const [searchTerm, setSearchTerm] = useState("");
   const {
     data: categorias,
     error: errorCategorias,
     isLoading: isLoadingCategorias,
   } = useSWR<CategoriaTree[]>("/api/producto/categoria/tree", apiFetcher);
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      setIsMobileMenuOpen(false);
+      // Redirige a la página de productos con el query param
+      router.push(`/producto?buscar=${encodeURIComponent(searchTerm)}`);
+    }
+  };
   useEffect(() => {
     setIsMounted(true); // Se ejecuta solo en el cliente
     const storedUserData = localStorage.getItem("userData");
@@ -186,6 +196,21 @@ export default function Navbar() {
             </div>
           </div>
 
+          {/* --- BARRA DE BÚSQUEDA CENTRAL --- */}
+          <div className="flex-1 max-w-lg hidden md:block">
+            <form onSubmit={handleSearch} className="relative">
+              <input
+                type="text"
+                placeholder="Buscar productos..."
+                className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-gray-50"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+            </form>
+          </div>
           <div className="hidden items-center space-x-4 md:flex">
             {/* --- 3. MODIFICAR EL ICONO DEL CARRITO --- */}
             <Link

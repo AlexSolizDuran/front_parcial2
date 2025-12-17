@@ -11,40 +11,26 @@ interface ProductCardProps {
 
 export default function ProductCard({ producto }: ProductCardProps) {
   return (
-    // --- ¡AQUÍ ESTÁ EL CAMBIO! ---
-    // Ahora apunta a la página de detalle del producto
     <Link
-      href={`/producto/${producto.id}`} // <- ANTES: /producto/[id]?variante=[id]
+      href={`/producto/${producto.id}`}
       className="group relative flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md"
     >
-      <div className="flex aspect-square w-full items-center justify-center rounded-md bg-gray-100 text-gray-400">
+      {/* SOLUCIÓN: Agregamos "relative" a este div. 
+         Esto hace que el <Image fill /> se limite a este cuadro y no a toda la tarjeta.
+      */}
+      <div className="relative flex aspect-square w-full items-center justify-center rounded-md bg-gray-100 text-gray-400 overflow-hidden">
         {producto.imagen ? (
-          // 2. Si hay imagen, mostrarla
           <Image
             src={producto.imagen}
             alt={producto.nombre}
-            fill
+            fill // Ocupa todo el espacio del padre "relative"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
-          // 3. Si NO hay imagen, mostrar el ícono placeholder
+          // Limpié la lógica repetida que tenías aquí
           <div className="flex h-full w-full items-center justify-center text-gray-400">
-            {producto.imagen ? (
-              // 2. Si hay imagen, mostrarla
-              <Image
-                src={producto.imagen}
-                alt={producto.nombre}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-            ) : (
-              // 3. Si NO hay imagen, mostrar el ícono placeholder
-              <div className="flex h-full w-full items-center justify-center text-gray-400">
-                <Package className="h-20 w-20" />{" "}
-              </div>
-            )}
+            <Package className="h-20 w-20" />
           </div>
         )}
       </div>
